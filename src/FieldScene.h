@@ -1,28 +1,27 @@
 #pragma once
 #include "Scene.h"
 #include "raylib.h"
-#include <vector>
 
 class FieldScene : public IScene
 {
 public:
     FieldScene();
-
     void Enter(Game& game) override;
     void Update(Game& game, float dt) override;
     void Draw(Game& game) override;
 
 private:
-    bool CheckWallCollision(const Rectangle& rect) const;
-    void ResolveMovement(Rectangle& playerRect, const Vector2& move);
+    void EndDay(Game& game);
+    void NextWeek(Game& game);
+    void ApplyWeekEvent(Game& game);
 
-private:
-    std::vector<Rectangle> walls;
+    Rectangle classZone = { 150, 80, 120, 80 };
+    Rectangle helperZone = { 350, 80, 120, 80 };
+    Rectangle battleZone = { 600, 80, 120, 80 };
+    Rectangle barZone = { 200, 300, 140, 80 };
+    Rectangle homeZone = { 500, 300, 140, 80 };
+    Rectangle nextZone = { 800, 420, 120, 80 };
 
-    Rectangle npc = { 260, 120, 40, 40 };
-    Rectangle enemy = { 720, 360, 48, 48 };
-    Rectangle exitZone = { 860, 40, 50, 50 };
-
-    bool showDialog = false;
-    bool touchingNpc = false;
+    bool showMessage = false;
+    const char* message = "";
 };
