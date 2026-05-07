@@ -21,10 +21,9 @@ void TitleScene::Update(Game& game, float dt)
 
 void TitleScene::Draw(Game& game)
 {
-    (void)game;
-    DrawText("UNIV SURVIVAL : 15 WEEKS", 250, 120, 36, RAYWHITE);
-    DrawText("ENTER : Start Semester", 320, 220, 28, LIGHTGRAY);
-    DrawText("Mouse click zones to act", 340, 270, 22, GRAY);
-    DrawText("Day: class/battle  Night: bar/home", 280, 310, 22, GRAY);
-    DrawText("Debuffs happen on exam/presentation checks", 220, 350, 22, GRAY);
+    auto& f = game.Resources().UiFont();
+    DrawTextEx(f, "UNIV SURVIVAL : 15 WEEKS", {250, 120}, 52, 2, RAYWHITE);
+    DrawTextEx(f, "ENTER : Start Semester", {380, 250}, 34, 1, LIGHTGRAY);
+    DrawTextEx(f, "Move with WASD/Arrows and press E to interact", {240, 320}, 30, 1, GRAY);
+    DrawTextEx(f, "malgunsl.ttf exists -> Korean text rendering enabled", {250, 360}, 26, 1, GRAY);
 }

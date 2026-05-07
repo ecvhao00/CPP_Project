@@ -2,12 +2,26 @@
 
 void ResourceManager::Load()
 {
-    // 나중에 여기서 텍스처, 폰트, 사운드 로드
-    // 예:
-    // playerTex = LoadTexture("assets/player.png");
+    if (FileExists("malgunsl.ttf"))
+    {
+        uiFont = LoadFontEx("malgunsl.ttf", 28, nullptr, 0);
+        useCustomFont = uiFont.texture.id != 0;
+    }
+    if (!useCustomFont)
+    {
+        uiFont = GetFontDefault();
+    }
 }
 
 void ResourceManager::Unload()
 {
-    // 나중에 여기서 텍스처, 폰트, 사운드 해제
+    if (useCustomFont)
+    {
+        UnloadFont(uiFont);
+    }
+}
+
+Font& ResourceManager::UiFont()
+{
+    return uiFont;
 }

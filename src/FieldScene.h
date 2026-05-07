@@ -15,12 +15,12 @@ private:
     void NextWeek(Game& game);
     void ApplyWeekEvent(Game& game);
 
-    Rectangle classZone = { 150, 80, 120, 80 };
-    Rectangle helperZone = { 350, 80, 120, 80 };
-    Rectangle battleZone = { 600, 80, 120, 80 };
-    Rectangle barZone = { 200, 300, 140, 80 };
-    Rectangle homeZone = { 500, 300, 140, 80 };
-    Rectangle nextZone = { 800, 420, 120, 80 };
+    Rectangle classZone = { 120, 90, 220, 120 };
+    Rectangle helperZone = { 410, 90, 220, 120 };
+    Rectangle battleZone = { 700, 90, 220, 120 };
+    Rectangle barZone = { 200, 360, 240, 130 };
+    Rectangle homeZone = { 560, 360, 240, 130 };
+    Rectangle nextZone = { 1030, 570, 210, 100 };
 
     bool showMessage = false;
     const char* message = "";
