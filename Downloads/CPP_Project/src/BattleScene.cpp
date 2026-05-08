@@ -17,7 +17,7 @@ void BattleScene::Enter(Game& game)
     }
     enemyTurnTimer = 0.0f;
     state = BattleState::PlayerTurn;
-    message = "An assignment monster appeared!";
+    message = "과제 괴물이 나타났다!";
 }
 
 void BattleScene::Update(Game& game, float dt)
@@ -38,12 +38,12 @@ void BattleScene::Update(Game& game, float dt)
                 data.player.maxHp += 2;
                 data.player.hp = std::min(data.player.maxHp, data.player.hp + 3);
                 data.player.attack += 1;
-                message = "Victory! LV up. ENTER to return.";
+                message = "승리! 레벨 상승. ENTER로 돌아가기.";
                 state = BattleState::Victory;
             }
             else
             {
-                message = TextFormat("You dealt %d damage!", data.player.attack);
+                message = TextFormat("과제의 체력을 %d 깎았다!", data.player.attack);
                 state = BattleState::EnemyTurn;
                 enemyTurnTimer = 0.0f;
             }
@@ -54,12 +54,12 @@ void BattleScene::Update(Game& game, float dt)
             {
                 data.player.hp = std::min(data.player.maxHp, data.player.hp + 10);
                 data.hasPotion = false;
-                message = "You used a potion.";
+                message = "간식을 먹고 멘탈을 회복했다.";
                 state = BattleState::EnemyTurn;
             }
             else
             {
-                message = "No potion left.";
+                message = "남은 회복 아이템이 없다.";
             }
         }
         break;
@@ -71,12 +71,12 @@ void BattleScene::Update(Game& game, float dt)
             if (data.player.hp <= 0)
             {
                 data.player.hp = 0;
-                message = "Burnout... ENTER to title.";
+                message = "번아웃... ENTER로 타이틀로 돌아가기.";
                 state = BattleState::Defeat;
             }
             else
             {
-                message = TextFormat("Enemy dealt %d damage!", enemyAttack);
+                message = TextFormat("과제가 멘탈을 %d 깎았다!", enemyAttack);
                 state = BattleState::PlayerTurn;
             }
         }
@@ -97,21 +97,22 @@ void BattleScene::Update(Game& game, float dt)
 void BattleScene::Draw(Game& game)
 {
     const GameData& data = game.Data();
+    auto& f = game.Resources().UiFont();
     DrawRectangle(0, 0, Game::ScreenWidth, Game::ScreenHeight, DARKPURPLE);
     DrawRectangle(160, 280, 100, 100, BLUE);
     DrawRectangle(700, 140, 120, 120, RED);
-    DrawText("STUDENT", 160, 390, 24, WHITE);
-    DrawText("ASSIGNMENT", 675, 270, 24, WHITE);
+    DrawTextEx(f, "학생", {180, 390}, 26, 1, WHITE);
+    DrawTextEx(f, "과제", {728, 270}, 26, 1, WHITE);
     DrawRectangle(40, 30, 880, 90, Fade(BLACK, 0.5f));
     DrawRectangle(40, 420, 880, 90, Fade(BLACK, 0.6f));
-    DrawText(TextFormat("HP: %d / %d  LV:%d", data.player.hp, data.player.maxHp, data.player.level), 60, 50, 28, WHITE);
-    DrawText(TextFormat("Enemy HP: %d", enemyHp), 650, 50, 28, WHITE);
-    DrawText(message.c_str(), 60, 440, 24, YELLOW);
+    DrawTextEx(f, TextFormat("멘탈: %d / %d  레벨:%d", data.player.hp, data.player.maxHp, data.player.level), {60, 50}, 28, 1, WHITE);
+    DrawTextEx(f, TextFormat("과제 체력: %d", enemyHp), {650, 50}, 28, 1, WHITE);
+    DrawTextEx(f, message.c_str(), {60, 440}, 24, 1, YELLOW);
     if (state == BattleState::PlayerTurn)
     {
-        DrawText("[A] Attack", 60, 475, 22, RAYWHITE);
-        DrawText("[H] Heal", 220, 475, 22, RAYWHITE);
+        DrawTextEx(f, "[A] 공격", {60, 475}, 22, 1, RAYWHITE);
+        DrawTextEx(f, "[H] 회복", {220, 475}, 22, 1, RAYWHITE);
     }
-    else if (state == BattleState::EnemyTurn) DrawText("Enemy is acting...", 60, 475, 22, LIGHTGRAY);
-    else DrawText("[ENTER] Continue", 60, 475, 22, RAYWHITE);
+    else if (state == BattleState::EnemyTurn) DrawTextEx(f, "과제가 반격하는 중...", {60, 475}, 22, 1, LIGHTGRAY);
+    else DrawTextEx(f, "[ENTER] 계속", {60, 475}, 22, 1, RAYWHITE);
 }

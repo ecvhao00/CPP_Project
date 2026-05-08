@@ -1,5 +1,6 @@
 #pragma once
 #include "raylib.h"
+#include <string>
 
 struct PlayerData
 {
@@ -21,6 +22,8 @@ struct SemesterData
     int attendanceScore = 10;
     int devPower = 5;
     int network = 3;
+    int maxActionPoints = 3;
+    int actionPoints = 3;
 
     bool foughtToday = false;
     bool attendedClassToday = false;
@@ -34,6 +37,7 @@ struct SemesterData
 
     bool gameEnded = false;
     bool passed = false;
+    std::string endingName = "FAIL";
 };
 
 struct GameData
