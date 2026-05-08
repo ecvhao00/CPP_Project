@@ -8,8 +8,8 @@ class IScene;
 class Game
 {
 public:
-    static constexpr int ScreenWidth = 960;
-    static constexpr int ScreenHeight = 540;
+    static constexpr int ScreenWidth = 1280;
+    static constexpr int ScreenHeight = 720;
 
     Game();
     ~Game();

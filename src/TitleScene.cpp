@@ -4,6 +4,12 @@
 #include "raylib.h"
 #include <memory>
 
+static void DrawCenteredText(Font& font, const char* text, float y, float fontSize, float spacing, Color color)
+{
+    Vector2 size = MeasureTextEx(font, text, fontSize, spacing);
+    DrawTextEx(font, text, { (Game::ScreenWidth - size.x) * 0.5f, y }, fontSize, spacing, color);
+}
+
 void TitleScene::Enter(Game& game)
 {
     game.Data() = GameData{};
@@ -12,7 +18,6 @@ void TitleScene::Enter(Game& game)
 void TitleScene::Update(Game& game, float dt)
 {
     (void)dt;
-
     if (IsKeyPressed(KEY_ENTER))
     {
         game.Data() = GameData{};
@@ -22,11 +27,9 @@ void TitleScene::Update(Game& game, float dt)
 
 void TitleScene::Draw(Game& game)
 {
-    (void)game;
-
-    DrawText("RPG ASSIGNMENT SKELETON", 250, 120, 32, RAYWHITE);
-    DrawText("ENTER : Start", 380, 220, 24, LIGHTGRAY);
-    DrawText("Move : Arrow keys / WASD", 330, 270, 22, GRAY);
-    DrawText("NPC talk : E", 410, 305, 22, GRAY);
-    DrawText("Battle : A(attack), H(heal)", 320, 340, 22, GRAY);
+    auto& f = game.Resources().UiFont();
+    DrawCenteredText(f, "UNIV SURVIVAL : 15 WEEKS", 120, 52, 2, RAYWHITE);
+    DrawCenteredText(f, "ENTER : Start Semester", 250, 34, 1, LIGHTGRAY);
+    DrawCenteredText(f, "Move with WASD/Arrows and press E to interact", 320, 30, 1, GRAY);
+    DrawCenteredText(f, "malgunsl.ttf exists -> Korean text rendering enabled", 360, 26, 1, GRAY);
 }

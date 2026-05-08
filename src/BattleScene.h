@@ -22,5 +22,5 @@ private:
     int enemyAttack = 6;
     float enemyTurnTimer = 0.0f;
     BattleState state = BattleState::PlayerTurn;
-    std::string message = "A boss appeared!";
+    std::string message = "과제 괴물이 나타났다!";
 };
