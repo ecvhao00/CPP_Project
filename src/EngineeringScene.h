@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-class HomeScene : public IScene
+class EngineeringScene : public IScene
 {
 public:
     void Enter(Game& game) override;
@@ -13,31 +13,33 @@ public:
     void Draw(Game& game) override;
 
 private:
-    bool UseHomeAction(Game& game);
-    int RecoverMental(Game& game, int amount);
-    std::string StartNextWeek(Game& game);
-    std::string ApplyWeekEvent(Game& game);
-    void StartSleepTransition();
-    void UpdateSleepTransition(Game& game, float dt);
-    void DrawFadeOverlay() const;
+    enum class DialogueSpeaker
+    {
+        None,
+        ProfessorK,
+        Senior
+    };
+
+    bool UseActionPoint(Game& game);
     void ShowMessage(const std::string& text, bool center = false);
-    void BeginDialogue(std::vector<std::string> lines);
+    void BeginDialogue(DialogueSpeaker speaker, const char* speakerName, std::vector<std::string> lines);
     void AdvanceDialogue();
     void DrawDialogue(Game& game);
+    void DrawDialoguePortrait(Font& font, Rectangle area) const;
 
-    Rectangle gameZone = { 120, 160, 260, 150 };
-    Rectangle sleepZone = { 510, 160, 260, 150 };
-    Rectangle assignmentZone = { 120, 430, 260, 150 };
+    Rectangle classZone = { 140, 150, 300, 160 };
+    Rectangle seniorZone = { 520, 150, 300, 160 };
+    Rectangle exitZone = { 1010, 570, 220, 100 };
     Vector2 playerPosition = { 600.0f, 520.0f };
 
     bool showMessage = false;
     bool showCenterMessage = false;
+    float messageTimer = 0.0f;
     std::string message = "";
 
-    bool sleepTransitionActive = false;
-    float sleepTransitionTimer = 0.0f;
-
     bool dialogueActive = false;
+    DialogueSpeaker dialogueSpeaker = DialogueSpeaker::None;
+    std::string dialogueName = "";
     std::vector<std::string> dialogueLines;
     int dialogueLineIndex = 0;
 };

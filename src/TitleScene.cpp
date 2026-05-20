@@ -1,6 +1,6 @@
 #include "TitleScene.h"
 #include "Game.h"
-#include "FieldScene.h"
+#include "IntroScene.h"
 #include "raylib.h"
 #include <memory>
 
@@ -21,15 +21,19 @@ void TitleScene::Update(Game& game, float dt)
     if (IsKeyPressed(KEY_ENTER))
     {
         game.Data() = GameData{};
-        game.ChangeScene(std::make_unique<FieldScene>());
+        game.ChangeScene(std::make_unique<IntroScene>());
     }
 }
 
 void TitleScene::Draw(Game& game)
 {
     auto& f = game.Resources().UiFont();
-    DrawCenteredText(f, "UNIV SURVIVAL : 15 WEEKS", 120, 52, 2, RAYWHITE);
-    DrawCenteredText(f, "ENTER : Start Semester", 250, 34, 1, LIGHTGRAY);
-    DrawCenteredText(f, "Move with WASD/Arrows and press E to interact", 320, 30, 1, GRAY);
-    DrawCenteredText(f, "malgunsl.ttf exists -> Korean text rendering enabled", 360, 26, 1, GRAY);
+    DrawCenteredText(f, "UNIV SURVIVAL : 15 WEEKS", 155, 56, 2, RAYWHITE);
+    DrawCenteredText(f, "15주 학기 생존 RPG", 225, 30, 1, LIGHTGRAY);
+
+    DrawRectangle(390, 314, 500, 2, Fade(RAYWHITE, 0.35f));
+
+    DrawCenteredText(f, "ENTER : 학기 시작", 360, 38, 1, YELLOW);
+    DrawCenteredText(f, "WASD / 방향키 이동   E : 상호작용", 438, 27, 1, LIGHTGRAY);
+    DrawCenteredText(f, "공학관에서 성장하고, 과제를 해결해 PASS를 노리세요", 480, 24, 1, GRAY);
 }

@@ -8,7 +8,7 @@
 class FieldScene : public IScene
 {
 public:
-    explicit FieldScene(std::string enterMessage = "", bool centerMessage = false);
+    explicit FieldScene(std::string enterMessage = "", bool centerMessage = false, bool startFadeIn = false);
     void Enter(Game& game) override;
     void Update(Game& game, float dt) override;
     void Draw(Game& game) override;
@@ -21,25 +21,35 @@ private:
         Senior
     };
 
+    enum class TimeTransition
+    {
+        None,
+        FadeInOnly,
+        ToNight,
+        ToNextWeek
+    };
+
     void EndDay(Game& game);
     void NextWeek(Game& game);
     void ApplyWeekEvent(Game& game);
     bool UseActionPoint(Game& game);
     void ShowFieldMessage(const char* text, bool center = false);
+    void StartTimeTransition(TimeTransition transition);
+    void UpdateTimeTransition(Game& game, float dt);
+    void DrawFadeOverlay() const;
     void BeginDialogue(DialogueSpeaker speaker, const char* speakerName, std::vector<std::string> lines);
     void AdvanceDialogue();
     void DrawDialogue(Game& game);
     void DrawDialoguePortrait(Font& font, Rectangle area) const;
 
-    Rectangle classZone = { 120, 90, 220, 120 };
-    Rectangle helperZone = { 410, 90, 220, 120 };
-    Rectangle battleZone = { 700, 90, 220, 120 };
-    Rectangle barZone = { 200, 360, 240, 130 };
-    Rectangle homeZone = { 560, 360, 240, 130 };
+    Rectangle engineeringZone = { 70, 75, 360, 155 };
+    Rectangle barZone = { 70, 300, 240, 130 };
+    Rectangle homeZone = { 70, 500, 240, 130 };
     Rectangle nextZone = { 1030, 570, 210, 100 };
 
     bool showMessage = false;
     bool showCenterMessage = false;
+    float messageTimer = 0.0f;
     std::string message = "";
 
     bool dialogueActive = false;
@@ -50,4 +60,9 @@ private:
 
     std::string enterMessage = "";
     bool enterMessageCentered = false;
+    bool startFadeIn = false;
+
+    TimeTransition timeTransition = TimeTransition::None;
+    float transitionTimer = 0.0f;
+    bool transitionCommitted = false;
 };

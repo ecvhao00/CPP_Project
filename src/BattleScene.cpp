@@ -98,21 +98,34 @@ void BattleScene::Draw(Game& game)
 {
     const GameData& data = game.Data();
     auto& f = game.Resources().UiFont();
+
+    Rectangle topPanel = { 40, 30, (float)Game::ScreenWidth - 80, 92 };
+    Rectangle bottomPanel = { 0, 520, (float)Game::ScreenWidth, 200 };
+    Rectangle playerBody = { 190, 285, 120, 120 };
+    Rectangle enemyBody = { 915, 185, 140, 140 };
+
     DrawRectangle(0, 0, Game::ScreenWidth, Game::ScreenHeight, DARKPURPLE);
-    DrawRectangle(160, 280, 100, 100, BLUE);
-    DrawRectangle(700, 140, 120, 120, RED);
-    DrawTextEx(f, "학생", {180, 390}, 26, 1, WHITE);
-    DrawTextEx(f, "과제", {728, 270}, 26, 1, WHITE);
-    DrawRectangle(40, 30, 880, 90, Fade(BLACK, 0.5f));
-    DrawRectangle(40, 420, 880, 90, Fade(BLACK, 0.6f));
-    DrawTextEx(f, TextFormat("멘탈: %d / %d  레벨:%d", data.player.hp, data.player.maxHp, data.player.level), {60, 50}, 28, 1, WHITE);
-    DrawTextEx(f, TextFormat("과제 체력: %d", enemyHp), {650, 50}, 28, 1, WHITE);
-    DrawTextEx(f, message.c_str(), {60, 440}, 24, 1, YELLOW);
+    DrawRectangleRec(playerBody, BLUE);
+    DrawRectangleRec(enemyBody, RED);
+    DrawTextEx(f, "학생", {playerBody.x + 34, playerBody.y + playerBody.height + 12}, 28, 1, WHITE);
+    DrawTextEx(f, "과제", {enemyBody.x + 42, enemyBody.y + enemyBody.height + 12}, 28, 1, WHITE);
+
+    DrawRectangleRec(topPanel, Fade(BLACK, 0.55f));
+    DrawRectangleLinesEx(topPanel, 2, Fade(RAYWHITE, 0.7f));
+    DrawTextEx(f, TextFormat("멘탈 %d/%d", data.player.hp, data.player.maxHp), {70, 50}, 30, 1, WHITE);
+    DrawTextEx(f, TextFormat("레벨 %d  공격 %d", data.player.level, data.player.attack), {70, 86}, 22, 1, LIGHTGRAY);
+    DrawTextEx(f, "VS", {618, 60}, 38, 2, YELLOW);
+    DrawTextEx(f, TextFormat("과제 체력 %d", enemyHp), {930, 50}, 30, 1, WHITE);
+    DrawTextEx(f, TextFormat("반격 피해 %d", enemyAttack), {930, 86}, 22, 1, LIGHTGRAY);
+
+    DrawRectangleRec(bottomPanel, Fade(BLACK, 0.78f));
+    DrawRectangle(0, 520, Game::ScreenWidth, 3, Fade(RAYWHITE, 0.45f));
+    DrawTextEx(f, message.c_str(), {70, 550}, 28, 1, YELLOW);
     if (state == BattleState::PlayerTurn)
     {
-        DrawTextEx(f, "[A] 공격", {60, 475}, 22, 1, RAYWHITE);
-        DrawTextEx(f, "[H] 회복", {220, 475}, 22, 1, RAYWHITE);
+        DrawTextEx(f, "[A] 공격", {70, 630}, 26, 1, RAYWHITE);
+        DrawTextEx(f, "[H] 회복", {240, 630}, 26, 1, RAYWHITE);
     }
-    else if (state == BattleState::EnemyTurn) DrawTextEx(f, "과제가 반격하는 중...", {60, 475}, 22, 1, LIGHTGRAY);
-    else DrawTextEx(f, "[ENTER] 계속", {60, 475}, 22, 1, RAYWHITE);
+    else if (state == BattleState::EnemyTurn) DrawTextEx(f, "과제가 반격하는 중...", {70, 630}, 26, 1, LIGHTGRAY);
+    else DrawTextEx(f, "[ENTER] 계속", {70, 630}, 26, 1, RAYWHITE);
 }

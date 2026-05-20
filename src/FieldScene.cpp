@@ -1,25 +1,17 @@
 #include "FieldScene.h"
-#include "BattleScene.h"
+#include "EngineeringScene.h"
 #include "Game.h"
 #include "HomeScene.h"
 #include "TitleScene.h"
+#include "UiWidgets.h"
 #include <memory>
 #include <cmath>
 #include <utility>
 
 namespace
 {
-const std::vector<std::string> ProfessorKClassDialogue = {
-    "프로페서 K: 오늘은 코드가 왜 터지는지부터 보자.",
-    "프로페서 K: 좋은 개발자는 에러 메시지를 무시하지 않는다.",
-    "수업을 들었다. 개발력 +2"
-};
-
-const std::vector<std::string> SeniorSocialDialogue = {
-    "선배: 막히면 혼자 끙끙대지 말고 물어봐.",
-    "선배: 대신 질문하기 전에 어디까지 봤는지는 정리해두고.",
-    "선배와 대화했다. 인맥도 +1"
-};
+constexpr float TimeTransitionDuration = 1.2f;
+constexpr float TimeTransitionHalf = TimeTransitionDuration * 0.5f;
 
 std::vector<std::string> BuildBarDialogue(int drinksTonight)
 {
@@ -29,10 +21,16 @@ std::vector<std::string> BuildBarDialogue(int drinksTonight)
         "술자리에 참석했다. 인맥도 +2"
     };
 }
+
+void DrawCenteredTextInRect(Font& font, const char* text, Rectangle rect, float fontSize, Color color)
+{
+    Vector2 size = MeasureTextEx(font, text, fontSize, 1);
+    DrawTextEx(font, text, { rect.x + (rect.width - size.x) * 0.5f, rect.y + (rect.height - size.y) * 0.5f }, fontSize, 1, color);
+}
 }
 
-FieldScene::FieldScene(std::string enterMessage, bool centerMessage)
-    : enterMessage(std::move(enterMessage)), enterMessageCentered(centerMessage)
+FieldScene::FieldScene(std::string enterMessage, bool centerMessage, bool startFadeIn)
+    : enterMessage(std::move(enterMessage)), enterMessageCentered(centerMessage), startFadeIn(startFadeIn)
 {
 }
 
@@ -41,13 +39,31 @@ void FieldScene::Enter(Game& game)
     (void)game;
     showMessage = !enterMessage.empty();
     showCenterMessage = enterMessageCentered;
+    messageTimer = 0.0f;
     message = enterMessage;
     dialogueActive = false;
+    if (startFadeIn)
+    {
+        timeTransition = TimeTransition::FadeInOnly;
+        transitionTimer = TimeTransitionHalf;
+        transitionCommitted = true;
+    }
 }
 
 void FieldScene::EndDay(Game& game)
 {
     auto& s=game.Data().semester;
+    if(!s.attendedClassToday) s.attendanceScore-=1;
+
+    s.isNight=true;
+    s.homeActionsUsedTonight=0;
+    s.drinksTonight=0;
+    s.actionPoints=s.maxActionPoints;
+}
+void FieldScene::NextWeek(Game& game)
+{
+    auto& d = game.Data();
+    auto& s = d.semester;
     if ((s.week == 8 || s.week == 15) && !s.foughtToday)
     {
         s.gameEnded = true;
@@ -60,7 +76,6 @@ void FieldScene::EndDay(Game& game)
     }
 
     if(!s.foughtToday) s.assignmentScore-=1;
-    if(!s.attendedClassToday) s.attendanceScore-=1;
 
     if (s.week == 15)
     {
@@ -73,12 +88,14 @@ void FieldScene::EndDay(Game& game)
         return;
     }
 
-    s.isNight=true;
-    s.homeActionsUsedTonight=0;
-    s.drinksTonight=0;
-    s.actionPoints=s.maxActionPoints;
+    s.week += 1;
+    s.isNight = false;
+    s.foughtToday = false;
+    s.attendedClassToday = false;
+    s.actionPoints = s.maxActionPoints;
+    d.player.position = { 210.0f, 250.0f };
+    ApplyWeekEvent(game);
 }
-void FieldScene::NextWeek(Game& game){ auto& s=game.Data().semester; s.week+=1; s.isNight=false; s.foughtToday=false; s.attendedClassToday=false; s.actionPoints=s.maxActionPoints; ApplyWeekEvent(game);} 
 
 bool FieldScene::UseActionPoint(Game& game)
 {
@@ -97,6 +114,54 @@ void FieldScene::ShowFieldMessage(const char* text, bool center)
     message = text;
     showMessage = true;
     showCenterMessage = center;
+    messageTimer = center ? 1.6f : 0.0f;
+}
+
+void FieldScene::StartTimeTransition(TimeTransition transition)
+{
+    if (timeTransition != TimeTransition::None) return;
+
+    timeTransition = transition;
+    transitionTimer = 0.0f;
+    transitionCommitted = false;
+    showMessage = false;
+    showCenterMessage = false;
+    messageTimer = 0.0f;
+}
+
+void FieldScene::UpdateTimeTransition(Game& game, float dt)
+{
+    if (timeTransition == TimeTransition::None) return;
+
+    transitionTimer += dt;
+    if (!transitionCommitted && transitionTimer >= TimeTransitionHalf)
+    {
+        if (timeTransition == TimeTransition::ToNight)
+        {
+            EndDay(game);
+        }
+        else if (timeTransition == TimeTransition::ToNextWeek)
+        {
+            NextWeek(game);
+        }
+        transitionCommitted = true;
+    }
+
+    if (transitionTimer >= TimeTransitionDuration)
+    {
+        timeTransition = TimeTransition::None;
+        transitionTimer = 0.0f;
+        transitionCommitted = false;
+    }
+}
+
+void FieldScene::DrawFadeOverlay() const
+{
+    if (timeTransition == TimeTransition::None) return;
+
+    float progress = Clamp(transitionTimer / TimeTransitionDuration, 0.0f, 1.0f);
+    float alpha = progress < 0.5f ? progress * 2.0f : (1.0f - progress) * 2.0f;
+    DrawRectangle(0, 0, Game::ScreenWidth, Game::ScreenHeight, Fade(BLACK, alpha));
 }
 
 void FieldScene::BeginDialogue(DialogueSpeaker speaker, const char* speakerName, std::vector<std::string> lines)
@@ -190,8 +255,23 @@ void FieldScene::ApplyWeekEvent(Game& game)
 void FieldScene::Update(Game& game, float dt)
 {
     auto& d = game.Data(); auto& s = d.semester;
+    if (timeTransition != TimeTransition::None)
+    {
+        UpdateTimeTransition(game, dt);
+        return;
+    }
     if (s.gameEnded){ if(IsKeyPressed(KEY_ENTER)){ game.Data()=GameData{}; game.ChangeScene(std::make_unique<TitleScene>());} return; }
     if (dialogueActive){ if(IsKeyPressed(KEY_E)) AdvanceDialogue(); return; }
+    if (messageTimer > 0.0f)
+    {
+        messageTimer -= dt;
+        if (messageTimer <= 0.0f)
+        {
+            messageTimer = 0.0f;
+            showMessage = false;
+            showCenterMessage = false;
+        }
+    }
 
     Vector2 in{0,0};
     if (IsKeyDown(KEY_RIGHT)||IsKeyDown(KEY_D)) in.x +=1;
@@ -204,20 +284,20 @@ void FieldScene::Update(Game& game, float dt)
     d.player.position.y = Clamp(d.player.position.y, 20, (float)Game::ScreenHeight-56);
 
     Rectangle p{d.player.position.x,d.player.position.y,36,36};
-    bool nearClass=CheckCollisionRecs(p, classZone), nearHelper=CheckCollisionRecs(p, helperZone), nearBattle=CheckCollisionRecs(p, battleZone), nearBar=CheckCollisionRecs(p, barZone), nearHome=CheckCollisionRecs(p, homeZone), nearNext=CheckCollisionRecs(p, nextZone);
+    bool nearEngineering=CheckCollisionRecs(p, engineeringZone), nearBar=CheckCollisionRecs(p, barZone), nearHome=CheckCollisionRecs(p, homeZone), nearNext=CheckCollisionRecs(p, nextZone);
 
     if (IsKeyPressed(KEY_E))
     {
         showCenterMessage = false;
-        bool wantsLimitedAction = (nearClass && !s.isNight) || nearHelper || nearBattle || (nearBar && s.isNight && s.drinksTonight < 2);
+        bool wantsLimitedAction = nearBar && s.isNight && s.drinksTonight < 2;
         if (wantsLimitedAction && !UseActionPoint(game)) return;
 
-        if (nearClass && !s.isNight){ s.attendedClassToday=true; s.devPower +=2; BeginDialogue(DialogueSpeaker::ProfessorK, "프로페서 K", ProfessorKClassDialogue); }
-        else if (nearHelper){ s.network +=1; BeginDialogue(DialogueSpeaker::Senior, "선배", SeniorSocialDialogue); }
-        else if (nearBattle){ game.ChangeScene(std::make_unique<BattleScene>()); return; }
+        if (nearEngineering){ game.ChangeScene(std::make_unique<EngineeringScene>()); return; }
         else if (nearBar && s.isNight && s.drinksTonight<2){ s.drinksTonight++; s.network +=2; BeginDialogue(DialogueSpeaker::None, "술자리", BuildBarDialogue(s.drinksTonight)); }
+        else if (nearBar && !s.isNight){ ShowFieldMessage("낮술은 자제하세요!", true); }
         else if (nearHome && s.isNight){ game.ChangeScene(std::make_unique<HomeScene>()); return; }
-        else if (nearNext){ if(!s.isNight) EndDay(game); else NextWeek(game); }
+        else if (nearHome && !s.isNight){ ShowFieldMessage("오자마자 가시려고요?", true); }
+        else if (nearNext){ StartTimeTransition(s.isNight ? TimeTransition::ToNextWeek : TimeTransition::ToNight); }
     }
 }
 
@@ -225,23 +305,16 @@ void FieldScene::Draw(Game& game)
 {
     const auto& d=game.Data(); const auto& s=d.semester; auto& f=game.Resources().UiFont();
     DrawRectangle(0,0,Game::ScreenWidth,Game::ScreenHeight,Color{35,60,40,255});
-    DrawRectangleRec(classZone, BLUE); DrawRectangleRec(helperZone, ORANGE); DrawRectangleRec(battleZone, RED); DrawRectangleRec(barZone, PURPLE); DrawRectangleRec(homeZone, BROWN); DrawRectangleRec(nextZone, DARKBLUE);
+    DrawRectangleRec(engineeringZone, BLUE);
+    DrawRectangleRec(barZone, PURPLE); DrawRectangleRec(homeZone, BROWN); DrawRectangleRec(nextZone, DARKBLUE);
     DrawRectangle((int)d.player.position.x,(int)d.player.position.y,36,36, SKYBLUE);
-    DrawTextEx(f,"CLASS",{classZone.x+60,classZone.y+45},28,1,WHITE); DrawTextEx(f,"HELPER",{helperZone.x+45,helperZone.y+45},28,1,WHITE); DrawTextEx(f,"BATTLE",{battleZone.x+50,battleZone.y+45},28,1,WHITE);
-    DrawTextEx(f,"BAR",{barZone.x+90,barZone.y+50},30,1,WHITE); DrawTextEx(f,"HOME",{homeZone.x+78,homeZone.y+50},30,1,WHITE); DrawTextEx(f,s.isNight?"NEXT WEEK":"TO NIGHT",{nextZone.x+20,nextZone.y+38},28,1,WHITE);
+    DrawCenteredTextInRect(f, "공학관", engineeringZone, 32, WHITE);
+    DrawCenteredTextInRect(f, "술자리", barZone, 30, WHITE);
+    DrawCenteredTextInRect(f, "집", homeZone, 30, WHITE);
+    DrawCenteredTextInRect(f, s.isNight ? "다음 주" : "밤으로", nextZone, 28, WHITE);
 
-    DrawRectangle(950,15,315,240,Fade(BLACK,0.55f));
-    DrawTextEx(f,TextFormat("Week %d (%s)",s.week,s.isNight?"Night":"Day"),{965,25},30,1,YELLOW);
-    DrawTextEx(f,TextFormat("멘탈 %d/%d  LV %d  ATK %d",d.player.hp,d.player.maxHp,d.player.level,d.player.attack),{965,61},24,1,WHITE);
-    DrawTextEx(f,TextFormat("Dev:%d  Network:%d",s.devPower,s.network),{965,91},24,1,WHITE);
-    DrawTextEx(f,TextFormat("과제:%d  출석:%d",s.assignmentScore,s.attendanceScore),{965,121},24,1,WHITE);
-    DrawTextEx(f,TextFormat("행동력 %d/%d",s.actionPoints,s.maxActionPoints),{965,151},22,1,RAYWHITE);
-    float energyRate = s.maxActionPoints > 0 ? (float)s.actionPoints / (float)s.maxActionPoints : 0.0f;
-    DrawRectangle(965,181,285,18,DARKGRAY);
-    DrawRectangle(965,181,(int)(285.0f*energyRate),18,GREEN);
-    DrawRectangleLines(965,181,285,18,WHITE);
-    DrawTextEx(f,"Move: WASD/Arrow  E: Interact",{965,210},18,1,LIGHTGRAY);
-    DrawTextEx(f,"HOME: 집 내부 선택지",{965,231},18,1,LIGHTGRAY);
+    UiWidgets::DrawTopStatus(f, d, "캠퍼스", "이동: WASD/방향키  E: 상호작용", "공학관: 수업/선배  집: 밤에 이용");
+    UiWidgets::DrawBottomGraphs(f, d);
 
     if(showMessage && showCenterMessage)
     {
@@ -252,4 +325,5 @@ void FieldScene::Draw(Game& game)
     else if(showMessage){ DrawRectangle(60, Game::ScreenHeight-130, Game::ScreenWidth-120, 95, Fade(BLACK,0.8f)); DrawTextEx(f,message.c_str(),{90,(float)Game::ScreenHeight-95},32,1,RAYWHITE); }
     DrawDialogue(game);
     if(s.gameEnded){ DrawRectangle(280,230,720,220,Fade(BLACK,0.85f)); DrawTextEx(f,TextFormat("%s - ENTER",s.endingName.c_str()),{460,315},52,2,YELLOW); }
+    DrawFadeOverlay();
 }

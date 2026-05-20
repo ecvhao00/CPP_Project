@@ -3,6 +3,7 @@
 #include "FieldScene.h"
 #include "Game.h"
 #include "TitleScene.h"
+#include "UiWidgets.h"
 #include <algorithm>
 #include <cmath>
 #include <memory>
@@ -12,6 +13,7 @@ namespace
 {
 constexpr int GameMentalRecovery = 10;
 constexpr int SleepMentalRecovery = 4;
+constexpr float SleepTransitionDuration = 0.6f;
 
 void DrawCenteredTextInRect(Font& font, const char* text, Rectangle rect, float fontSize, Color color)
 {
@@ -25,6 +27,8 @@ void HomeScene::Enter(Game& game)
     (void)game;
     showMessage = false;
     showCenterMessage = false;
+    sleepTransitionActive = false;
+    sleepTransitionTimer = 0.0f;
     dialogueActive = false;
     playerPosition = { 600.0f, 520.0f };
 }
@@ -32,12 +36,6 @@ void HomeScene::Enter(Game& game)
 bool HomeScene::UseHomeAction(Game& game)
 {
     auto& s = game.Data().semester;
-    int maxHomeActions = 2 - s.drinksTonight;
-    if (s.homeActionsUsedTonight >= maxHomeActions)
-    {
-        ShowMessage("오늘은 집에서 더 할 시간이 없습니다", true);
-        return false;
-    }
     if (s.actionPoints <= 0)
     {
         ShowMessage("행동력이 부족합니다", true);
@@ -59,7 +57,26 @@ int HomeScene::RecoverMental(Game& game, int amount)
 
 std::string HomeScene::StartNextWeek(Game& game)
 {
-    auto& s = game.Data().semester;
+    auto& d = game.Data();
+    auto& s = d.semester;
+    if ((s.week == 8 || s.week == 15) && !s.foughtToday)
+    {
+        s.gameEnded = true;
+        s.passed = false;
+        s.endingName = "F";
+        return "시험 주에 과제를 수행하지 못했다.";
+    }
+
+    if (!s.foughtToday) s.assignmentScore -= 1;
+
+    if (s.week == 15)
+    {
+        s.gameEnded = true;
+        s.passed = !(s.finalPresentationDebuff || s.finalExamDebuff || s.midtermExamDebuff || s.midtermPresentationDebuff) && s.assignmentScore > 0 && s.attendanceScore > 0;
+        s.endingName = s.passed ? "PASS" : "FAIL";
+        return s.passed ? "학기 종료! PASS" : "학기 종료... FAIL";
+    }
+
     s.week += 1;
     s.isNight = false;
     s.foughtToday = false;
@@ -67,6 +84,7 @@ std::string HomeScene::StartNextWeek(Game& game)
     s.homeActionsUsedTonight = 0;
     s.drinksTonight = 0;
     s.actionPoints = s.maxActionPoints;
+    d.player.position = { 210.0f, 250.0f };
     return ApplyWeekEvent(game);
 }
 
@@ -104,6 +122,36 @@ std::string HomeScene::ApplyWeekEvent(Game& game)
     return eventMessage;
 }
 
+void HomeScene::StartSleepTransition()
+{
+    if (sleepTransitionActive) return;
+
+    sleepTransitionActive = true;
+    sleepTransitionTimer = 0.0f;
+    showMessage = false;
+    showCenterMessage = false;
+}
+
+void HomeScene::UpdateSleepTransition(Game& game, float dt)
+{
+    sleepTransitionTimer += dt;
+    if (sleepTransitionTimer < SleepTransitionDuration) return;
+
+    int recovered = RecoverMental(game, SleepMentalRecovery);
+    std::string eventMessage = StartNextWeek(game);
+    std::string sleepMessage = TextFormat("잠을 자고 멘탈을 %d 회복했다. 다음 주가 시작되었다.", recovered);
+    if (!eventMessage.empty()) sleepMessage = eventMessage;
+    game.ChangeScene(std::make_unique<FieldScene>(sleepMessage, false, true));
+}
+
+void HomeScene::DrawFadeOverlay() const
+{
+    if (!sleepTransitionActive) return;
+
+    float alpha = Clamp(sleepTransitionTimer / SleepTransitionDuration, 0.0f, 1.0f);
+    DrawRectangle(0, 0, Game::ScreenWidth, Game::ScreenHeight, Fade(BLACK, alpha));
+}
+
 void HomeScene::ShowMessage(const std::string& text, bool center)
 {
     message = text;
@@ -138,6 +186,11 @@ void HomeScene::Update(Game& game, float dt)
     auto& d = game.Data();
     auto& s = d.semester;
 
+    if (sleepTransitionActive)
+    {
+        UpdateSleepTransition(game, dt);
+        return;
+    }
     if (s.gameEnded)
     {
         if (IsKeyPressed(KEY_ENTER))
@@ -189,11 +242,7 @@ void HomeScene::Update(Game& game, float dt)
         }
         else if (nearSleep)
         {
-            int recovered = RecoverMental(game, SleepMentalRecovery);
-            std::string eventMessage = StartNextWeek(game);
-            std::string sleepMessage = TextFormat("잠을 자고 멘탈을 %d 회복했다. 다음 주가 시작되었다.", recovered);
-            if (!eventMessage.empty()) sleepMessage = eventMessage;
-            game.ChangeScene(std::make_unique<FieldScene>(sleepMessage));
+            StartSleepTransition();
         }
         else if (nearAssignment)
         {
@@ -221,7 +270,6 @@ void HomeScene::DrawDialogue(Game& game)
 void HomeScene::Draw(Game& game)
 {
     const auto& d = game.Data();
-    const auto& s = d.semester;
     auto& f = game.Resources().UiFont();
 
     DrawRectangle(0,0,Game::ScreenWidth,Game::ScreenHeight,Color{54,45,58,255});
@@ -233,17 +281,8 @@ void HomeScene::Draw(Game& game)
     DrawCenteredTextInRect(f, "과제 수행하기", assignmentZone, 32, WHITE);
     DrawRectangle((int)playerPosition.x,(int)playerPosition.y,36,36, SKYBLUE);
 
-    DrawRectangle(950,15,315,220,Fade(BLACK,0.55f));
-    DrawTextEx(f,TextFormat("Week %d (Home)",s.week),{965,25},30,1,YELLOW);
-    DrawTextEx(f,TextFormat("멘탈 %d/%d  LV %d",d.player.hp,d.player.maxHp,d.player.level),{965,61},24,1,WHITE);
-    DrawTextEx(f,TextFormat("과제:%d  출석:%d",s.assignmentScore,s.attendanceScore),{965,91},24,1,WHITE);
-    DrawTextEx(f,TextFormat("행동력 %d/%d",s.actionPoints,s.maxActionPoints),{965,121},22,1,RAYWHITE);
-    float energyRate = s.maxActionPoints > 0 ? (float)s.actionPoints / (float)s.maxActionPoints : 0.0f;
-    DrawRectangle(965,151,285,18,DARKGRAY);
-    DrawRectangle(965,151,(int)(285.0f*energyRate),18,GREEN);
-    DrawRectangleLines(965,151,285,18,WHITE);
-    DrawTextEx(f,"Move: WASD/Arrow  E: 선택",{965,185},18,1,LIGHTGRAY);
-    DrawTextEx(f,"ESC: 밖으로",{965,206},18,1,LIGHTGRAY);
+    UiWidgets::DrawTopStatus(f, d, "집", "이동: WASD/방향키  E: 선택", "ESC: 밖으로");
+    UiWidgets::DrawBottomGraphs(f, d);
 
     if(showMessage && showCenterMessage)
     {
@@ -258,4 +297,5 @@ void HomeScene::Draw(Game& game)
     }
 
     DrawDialogue(game);
+    DrawFadeOverlay();
 }
