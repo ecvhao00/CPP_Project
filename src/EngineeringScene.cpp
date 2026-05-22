@@ -1,4 +1,5 @@
 #include "EngineeringScene.h"
+#include "BattleScene.h"
 #include "FieldScene.h"
 #include "Game.h"
 #include "UiWidgets.h"
@@ -24,6 +25,11 @@ void DrawCenteredTextInRect(Font& font, const char* text, Rectangle rect, float 
 {
     Vector2 size = MeasureTextEx(font, text, fontSize, 1);
     DrawTextEx(font, text, { rect.x + (rect.width - size.x) * 0.5f, rect.y + (rect.height - size.y) * 0.5f }, fontSize, 1, color);
+}
+
+bool IsExamWeek(int week)
+{
+    return week == 8 || week == 15;
 }
 }
 
@@ -124,6 +130,7 @@ void EngineeringScene::Update(Game& game, float dt)
     Rectangle playerRect{playerPosition.x, playerPosition.y, 36, 36};
     bool nearClass = CheckCollisionRecs(playerRect, classZone);
     bool nearSenior = CheckCollisionRecs(playerRect, seniorZone);
+    bool nearExam = IsExamWeek(s.week) && CheckCollisionRecs(playerRect, examZone);
     bool nearExit = CheckCollisionRecs(playerRect, exitZone);
 
     if (IsKeyPressed(KEY_E))
@@ -146,6 +153,13 @@ void EngineeringScene::Update(Game& game, float dt)
             if (!UseActionPoint(game)) return;
             s.network += 1;
             BeginDialogue(DialogueSpeaker::Senior, "선배", SeniorSocialDialogue);
+        }
+        else if (nearExam)
+        {
+            if (!UseActionPoint(game)) return;
+            s.currentBattleIsExam = true;
+            game.ChangeScene(std::make_unique<BattleScene>());
+            return;
         }
         else if (nearExit)
         {
@@ -215,9 +229,11 @@ void EngineeringScene::Draw(Game& game)
     DrawRectangle(0, 0, Game::ScreenWidth, Game::ScreenHeight, Color{42, 51, 64, 255});
     DrawRectangleRec(classZone, BLUE);
     DrawRectangleRec(seniorZone, ORANGE);
+    if (IsExamWeek(d.semester.week)) DrawRectangleRec(examZone, Color{185, 145, 55, 255});
     DrawRectangleRec(exitZone, DARKBLUE);
     DrawCenteredTextInRect(f, "수업", classZone, 32, WHITE);
     DrawCenteredTextInRect(f, "선배", seniorZone, 32, WHITE);
+    if (IsExamWeek(d.semester.week)) DrawCenteredTextInRect(f, "시험", examZone, 32, WHITE);
     DrawCenteredTextInRect(f, "밖으로", exitZone, 30, WHITE);
     DrawRectangle((int)playerPosition.x, (int)playerPosition.y, 36, 36, SKYBLUE);
 

@@ -9,6 +9,7 @@
 void BattleScene::Enter(Game& game)
 {
     GameData& data = game.Data();
+    const bool isExamBattle = data.semester.currentBattleIsExam;
     enemyHp = 12 + data.player.level * 4;
     enemyAttack = 3 + data.player.level;
     if (data.semester.midtermExamDebuff || data.semester.midtermPresentationDebuff || data.semester.finalExamDebuff || data.semester.finalPresentationDebuff)
@@ -17,12 +18,13 @@ void BattleScene::Enter(Game& game)
     }
     enemyTurnTimer = 0.0f;
     state = BattleState::PlayerTurn;
-    message = "과제 괴물이 나타났다!";
+    message = isExamBattle ? "시험이 시작됐다!" : "과제 괴물이 나타났다!";
 }
 
 void BattleScene::Update(Game& game, float dt)
 {
     GameData& data = game.Data();
+    const char* opponentName = data.semester.currentBattleIsExam ? "시험" : "과제";
 
     switch (state)
     {
@@ -33,7 +35,8 @@ void BattleScene::Update(Game& game, float dt)
             if (enemyHp <= 0)
             {
                 enemyHp = 0;
-                data.semester.foughtToday = true;
+                if (data.semester.currentBattleIsExam) data.semester.tookExamToday = true;
+                else data.semester.foughtToday = true;
                 data.player.level += 1;
                 data.player.maxHp += 2;
                 data.player.hp = std::min(data.player.maxHp, data.player.hp + 3);
@@ -43,7 +46,7 @@ void BattleScene::Update(Game& game, float dt)
             }
             else
             {
-                message = TextFormat("과제의 체력을 %d 깎았다!", data.player.attack);
+                message = TextFormat("%s의 체력을 %d 깎았다!", opponentName, data.player.attack);
                 state = BattleState::EnemyTurn;
                 enemyTurnTimer = 0.0f;
             }
@@ -76,13 +79,17 @@ void BattleScene::Update(Game& game, float dt)
             }
             else
             {
-                message = TextFormat("과제가 멘탈을 %d 깎았다!", enemyAttack);
+                message = TextFormat("%s이 멘탈을 %d 깎았다!", opponentName, enemyAttack);
                 state = BattleState::PlayerTurn;
             }
         }
         break;
     case BattleState::Victory:
-        if (IsKeyPressed(KEY_ENTER)) game.ChangeScene(std::make_unique<FieldScene>());
+        if (IsKeyPressed(KEY_ENTER))
+        {
+            data.semester.currentBattleIsExam = false;
+            game.ChangeScene(std::make_unique<FieldScene>());
+        }
         break;
     case BattleState::Defeat:
         if (IsKeyPressed(KEY_ENTER))
@@ -97,6 +104,7 @@ void BattleScene::Update(Game& game, float dt)
 void BattleScene::Draw(Game& game)
 {
     const GameData& data = game.Data();
+    const bool isExamBattle = data.semester.currentBattleIsExam;
     auto& f = game.Resources().UiFont();
 
     Rectangle topPanel = { 40, 30, (float)Game::ScreenWidth - 80, 92 };
@@ -108,14 +116,14 @@ void BattleScene::Draw(Game& game)
     DrawRectangleRec(playerBody, BLUE);
     DrawRectangleRec(enemyBody, RED);
     DrawTextEx(f, "학생", {playerBody.x + 34, playerBody.y + playerBody.height + 12}, 28, 1, WHITE);
-    DrawTextEx(f, "과제", {enemyBody.x + 42, enemyBody.y + enemyBody.height + 12}, 28, 1, WHITE);
+    DrawTextEx(f, isExamBattle ? "시험" : "과제", {enemyBody.x + 42, enemyBody.y + enemyBody.height + 12}, 28, 1, WHITE);
 
     DrawRectangleRec(topPanel, Fade(BLACK, 0.55f));
     DrawRectangleLinesEx(topPanel, 2, Fade(RAYWHITE, 0.7f));
     DrawTextEx(f, TextFormat("멘탈 %d/%d", data.player.hp, data.player.maxHp), {70, 50}, 30, 1, WHITE);
     DrawTextEx(f, TextFormat("레벨 %d  공격 %d", data.player.level, data.player.attack), {70, 86}, 22, 1, LIGHTGRAY);
     DrawTextEx(f, "VS", {618, 60}, 38, 2, YELLOW);
-    DrawTextEx(f, TextFormat("과제 체력 %d", enemyHp), {930, 50}, 30, 1, WHITE);
+    DrawTextEx(f, TextFormat("%s 체력 %d", isExamBattle ? "시험" : "과제", enemyHp), {930, 50}, 30, 1, WHITE);
     DrawTextEx(f, TextFormat("반격 피해 %d", enemyAttack), {930, 86}, 22, 1, LIGHTGRAY);
 
     DrawRectangleRec(bottomPanel, Fade(BLACK, 0.78f));
@@ -126,6 +134,6 @@ void BattleScene::Draw(Game& game)
         DrawTextEx(f, "[A] 공격", {70, 630}, 26, 1, RAYWHITE);
         DrawTextEx(f, "[H] 회복", {240, 630}, 26, 1, RAYWHITE);
     }
-    else if (state == BattleState::EnemyTurn) DrawTextEx(f, "과제가 반격하는 중...", {70, 630}, 26, 1, LIGHTGRAY);
+    else if (state == BattleState::EnemyTurn) DrawTextEx(f, isExamBattle ? "시험이 반격하는 중..." : "과제가 반격하는 중...", {70, 630}, 26, 1, LIGHTGRAY);
     else DrawTextEx(f, "[ENTER] 계속", {70, 630}, 26, 1, RAYWHITE);
 }

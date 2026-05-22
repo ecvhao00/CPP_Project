@@ -27,6 +27,18 @@ void DrawCenteredTextInRect(Font& font, const char* text, Rectangle rect, float 
     Vector2 size = MeasureTextEx(font, text, fontSize, 1);
     DrawTextEx(font, text, { rect.x + (rect.width - size.x) * 0.5f, rect.y + (rect.height - size.y) * 0.5f }, fontSize, 1, color);
 }
+
+const char* ResolveSemesterEnding(int devPower, int network)
+{
+    if (devPower >= 50 && network >= 35) return "A+";
+    if (devPower >= 30 && network >= 20) return "B+";
+    return "C";
+}
+
+bool IsExamWeek(int week)
+{
+    return week == 8 || week == 15;
+}
 }
 
 FieldScene::FieldScene(std::string enterMessage, bool centerMessage, bool startFadeIn)
@@ -64,12 +76,12 @@ void FieldScene::NextWeek(Game& game)
 {
     auto& d = game.Data();
     auto& s = d.semester;
-    if ((s.week == 8 || s.week == 15) && !s.foughtToday)
+    if (IsExamWeek(s.week) && !s.tookExamToday)
     {
         s.gameEnded = true;
         s.passed = false;
         s.endingName = "F";
-        message = "시험 주에 과제를 수행하지 못했다.";
+        message = "시험 주에 시험을 치르지 못했다.";
         showMessage = true;
         showCenterMessage = true;
         return;
@@ -80,9 +92,9 @@ void FieldScene::NextWeek(Game& game)
     if (s.week == 15)
     {
         s.gameEnded = true;
-        s.passed = !(s.finalPresentationDebuff||s.finalExamDebuff||s.midtermExamDebuff||s.midtermPresentationDebuff)&&s.assignmentScore>0&&s.attendanceScore>0;
-        s.endingName = s.passed ? "PASS" : "FAIL";
-        message = s.passed ? "학기 종료! PASS" : "학기 종료... FAIL";
+        s.endingName = ResolveSemesterEnding(s.devPower, s.network);
+        s.passed = true;
+        message = TextFormat("ENDING: %s", s.endingName.c_str());
         showMessage = true;
         showCenterMessage = false;
         return;
@@ -91,6 +103,8 @@ void FieldScene::NextWeek(Game& game)
     s.week += 1;
     s.isNight = false;
     s.foughtToday = false;
+    s.tookExamToday = false;
+    s.currentBattleIsExam = false;
     s.attendedClassToday = false;
     s.actionPoints = s.maxActionPoints;
     d.player.position = { 210.0f, 250.0f };

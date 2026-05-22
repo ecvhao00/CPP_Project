@@ -35,5 +35,5 @@ void TitleScene::Draw(Game& game)
 
     DrawCenteredText(f, "ENTER : 학기 시작", 360, 38, 1, YELLOW);
     DrawCenteredText(f, "WASD / 방향키 이동   E : 상호작용", 438, 27, 1, LIGHTGRAY);
-    DrawCenteredText(f, "공학관에서 성장하고, 과제를 해결해 PASS를 노리세요", 480, 24, 1, GRAY);
+    DrawCenteredText(f, "공학관에서 성장하고, 과제를 해결해 A+ 엔딩을 노리세요", 480, 24, 1, GRAY);
 }

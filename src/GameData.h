@@ -26,6 +26,8 @@ struct SemesterData
     int actionPoints = 3;
 
     bool foughtToday = false;
+    bool tookExamToday = false;
+    bool currentBattleIsExam = false;
     bool attendedClassToday = false;
     int homeActionsUsedTonight = 0;
     int drinksTonight = 0;
@@ -37,7 +39,7 @@ struct SemesterData
 
     bool gameEnded = false;
     bool passed = false;
-    std::string endingName = "FAIL";
+    std::string endingName = "C";
 };
 
 struct GameData

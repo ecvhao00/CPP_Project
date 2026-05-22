@@ -29,6 +29,7 @@ private:
 
     Rectangle classZone = { 140, 150, 300, 160 };
     Rectangle seniorZone = { 520, 150, 300, 160 };
+    Rectangle examZone = { 900, 150, 260, 160 };
     Rectangle exitZone = { 1010, 570, 220, 100 };
     Vector2 playerPosition = { 600.0f, 520.0f };
 

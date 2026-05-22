@@ -87,7 +87,7 @@ void IntroScene::DrawHelp(Game& game)
     DrawCenteredText(f, "학기 시작 전 안내", 90, 42, YELLOW);
     DrawRectangle(330, 158, 620, 2, Fade(RAYWHITE, 0.35f));
 
-    DrawTextEx(f, "목표: 15주 동안 과제와 출석을 관리해 PASS를 노리세요.", {260, 205}, 27, 1, RAYWHITE);
+    DrawTextEx(f, "목표: 15주 동안 개발력과 인맥을 키워 A+ 엔딩을 노리세요.", {260, 205}, 27, 1, RAYWHITE);
     DrawTextEx(f, "공학관에서는 수업으로 개발력을 올리고, 선배에게 인맥을 얻을 수 있습니다.", {260, 255}, 27, 1, RAYWHITE);
     DrawTextEx(f, "밤에는 술자리와 집을 이용할 수 있고, 집에서 과제를 수행할 수 있습니다.", {260, 305}, 27, 1, RAYWHITE);
     DrawTextEx(f, "8주와 15주는 시험 주입니다. 해당 주에는 과제를 반드시 수행해야 합니다.", {260, 355}, 27, 1, RAYWHITE);
