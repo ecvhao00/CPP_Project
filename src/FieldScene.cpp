@@ -49,6 +49,7 @@ FieldScene::FieldScene(std::string enterMessage, bool centerMessage, bool startF
 void FieldScene::Enter(Game& game)
 {
     (void)game;
+    playerMoving = false;
     showMessage = !enterMessage.empty();
     showCenterMessage = enterMessageCentered;
     messageTimer = 0.0f;
@@ -271,11 +272,12 @@ void FieldScene::Update(Game& game, float dt)
     auto& d = game.Data(); auto& s = d.semester;
     if (timeTransition != TimeTransition::None)
     {
+        playerMoving = false;
         UpdateTimeTransition(game, dt);
         return;
     }
-    if (s.gameEnded){ if(IsKeyPressed(KEY_ENTER)){ game.Data()=GameData{}; game.ChangeScene(std::make_unique<TitleScene>());} return; }
-    if (dialogueActive){ if(IsKeyPressed(KEY_E)) AdvanceDialogue(); return; }
+    if (s.gameEnded){ playerMoving = false; if(IsKeyPressed(KEY_ENTER)){ game.Data()=GameData{}; game.ChangeScene(std::make_unique<TitleScene>());} return; }
+    if (dialogueActive){ playerMoving = false; if(IsKeyPressed(KEY_E)) AdvanceDialogue(); return; }
     if (messageTimer > 0.0f)
     {
         messageTimer -= dt;
@@ -292,7 +294,8 @@ void FieldScene::Update(Game& game, float dt)
     if (IsKeyDown(KEY_LEFT)||IsKeyDown(KEY_A)) in.x -=1;
     if (IsKeyDown(KEY_DOWN)||IsKeyDown(KEY_S)) in.y +=1;
     if (IsKeyDown(KEY_UP)||IsKeyDown(KEY_W)) in.y -=1;
-    if (in.x!=0||in.y!=0){ float l=sqrtf(in.x*in.x+in.y*in.y); in.x/=l; in.y/=l; }
+    playerMoving = in.x!=0||in.y!=0;
+    if (playerMoving){ float l=sqrtf(in.x*in.x+in.y*in.y); in.x/=l; in.y/=l; }
     d.player.position.x += in.x*d.player.speed*dt; d.player.position.y += in.y*d.player.speed*dt;
     d.player.position.x = Clamp(d.player.position.x, 20, (float)Game::ScreenWidth-56);
     d.player.position.y = Clamp(d.player.position.y, 20, (float)Game::ScreenHeight-56);
@@ -321,7 +324,7 @@ void FieldScene::Draw(Game& game)
     DrawRectangle(0,0,Game::ScreenWidth,Game::ScreenHeight,Color{35,60,40,255});
     DrawRectangleRec(engineeringZone, BLUE);
     DrawRectangleRec(barZone, PURPLE); DrawRectangleRec(homeZone, BROWN); DrawRectangleRec(nextZone, DARKBLUE);
-    DrawRectangle((int)d.player.position.x,(int)d.player.position.y,36,36, SKYBLUE);
+    UiWidgets::DrawPlayer(game.Resources(), d.player.position, playerMoving);
     DrawCenteredTextInRect(f, "공학관", engineeringZone, 32, WHITE);
     DrawCenteredTextInRect(f, "술자리", barZone, 30, WHITE);
     DrawCenteredTextInRect(f, "집", homeZone, 30, WHITE);

@@ -51,6 +51,7 @@ private:
     bool showCenterMessage = false;
     float messageTimer = 0.0f;
     std::string message = "";
+    bool playerMoving = false;
 
     bool dialogueActive = false;
     DialogueSpeaker dialogueSpeaker = DialogueSpeaker::None;

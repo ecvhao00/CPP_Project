@@ -36,6 +36,7 @@ bool IsExamWeek(int week)
 void EngineeringScene::Enter(Game& game)
 {
     (void)game;
+    playerMoving = false;
     showMessage = false;
     showCenterMessage = false;
     messageTimer = 0.0f;
@@ -95,11 +96,13 @@ void EngineeringScene::Update(Game& game, float dt)
 
     if (dialogueActive)
     {
+        playerMoving = false;
         if (IsKeyPressed(KEY_E)) AdvanceDialogue();
         return;
     }
     if (IsKeyPressed(KEY_ESCAPE))
     {
+        playerMoving = false;
         d.player.position = { 210.0f, 250.0f };
         game.ChangeScene(std::make_unique<FieldScene>());
         return;
@@ -120,7 +123,8 @@ void EngineeringScene::Update(Game& game, float dt)
     if (IsKeyDown(KEY_LEFT)||IsKeyDown(KEY_A)) input.x -=1;
     if (IsKeyDown(KEY_DOWN)||IsKeyDown(KEY_S)) input.y +=1;
     if (IsKeyDown(KEY_UP)||IsKeyDown(KEY_W)) input.y -=1;
-    if (input.x!=0||input.y!=0){ float l=sqrtf(input.x*input.x+input.y*input.y); input.x/=l; input.y/=l; }
+    playerMoving = input.x!=0||input.y!=0;
+    if (playerMoving){ float l=sqrtf(input.x*input.x+input.y*input.y); input.x/=l; input.y/=l; }
 
     playerPosition.x += input.x*d.player.speed*dt;
     playerPosition.y += input.y*d.player.speed*dt;
@@ -235,7 +239,7 @@ void EngineeringScene::Draw(Game& game)
     DrawCenteredTextInRect(f, "선배", seniorZone, 32, WHITE);
     if (IsExamWeek(d.semester.week)) DrawCenteredTextInRect(f, "시험", examZone, 32, WHITE);
     DrawCenteredTextInRect(f, "밖으로", exitZone, 30, WHITE);
-    DrawRectangle((int)playerPosition.x, (int)playerPosition.y, 36, 36, SKYBLUE);
+    UiWidgets::DrawPlayer(game.Resources(), playerPosition, playerMoving);
 
     UiWidgets::DrawTopStatus(f, d, "공학관", "이동: WASD/방향키  E: 선택", "ESC: 밖으로");
     UiWidgets::DrawBottomGraphs(f, d);

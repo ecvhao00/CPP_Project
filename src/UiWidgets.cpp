@@ -22,6 +22,21 @@ void DrawBar(Font& font, const char* label, int value, int maxValue, Rectangle b
 
 namespace UiWidgets
 {
+void DrawPlayer(ResourceManager& resources, Vector2 position, bool moving)
+{
+    if (!resources.HasPlayerWalkSprites())
+    {
+        DrawRectangle((int)position.x, (int)position.y, 36, 36, SKYBLUE);
+        return;
+    }
+
+    int frameIndex = moving ? ((int)(GetTime() * 8.0) % resources.PlayerWalkFrameCount()) : 0;
+    Texture2D& texture = resources.PlayerWalkFrame(frameIndex);
+    Rectangle source = { 0, 0, (float)texture.width, (float)texture.height };
+    Rectangle dest = { position.x, position.y, 36, 36 };
+    DrawTexturePro(texture, source, dest, { 0, 0 }, 0.0f, WHITE);
+}
+
 void DrawTopStatus(Font& font, const GameData& data, const char* location, const char* hint1, const char* hint2)
 {
     const auto& player = data.player;

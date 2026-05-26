@@ -37,6 +37,7 @@ bool IsExamWeek(int week)
 void HomeScene::Enter(Game& game)
 {
     (void)game;
+    playerMoving = false;
     showMessage = false;
     showCenterMessage = false;
     sleepTransitionActive = false;
@@ -202,11 +203,13 @@ void HomeScene::Update(Game& game, float dt)
 
     if (sleepTransitionActive)
     {
+        playerMoving = false;
         UpdateSleepTransition(game, dt);
         return;
     }
     if (s.gameEnded)
     {
+        playerMoving = false;
         if (IsKeyPressed(KEY_ENTER))
         {
             game.Data() = GameData{};
@@ -216,11 +219,13 @@ void HomeScene::Update(Game& game, float dt)
     }
     if (dialogueActive)
     {
+        playerMoving = false;
         if (IsKeyPressed(KEY_E)) AdvanceDialogue();
         return;
     }
     if (IsKeyPressed(KEY_ESCAPE))
     {
+        playerMoving = false;
         game.ChangeScene(std::make_unique<FieldScene>());
         return;
     }
@@ -230,7 +235,8 @@ void HomeScene::Update(Game& game, float dt)
     if (IsKeyDown(KEY_LEFT)||IsKeyDown(KEY_A)) input.x -=1;
     if (IsKeyDown(KEY_DOWN)||IsKeyDown(KEY_S)) input.y +=1;
     if (IsKeyDown(KEY_UP)||IsKeyDown(KEY_W)) input.y -=1;
-    if (input.x!=0||input.y!=0){ float l=sqrtf(input.x*input.x+input.y*input.y); input.x/=l; input.y/=l; }
+    playerMoving = input.x!=0||input.y!=0;
+    if (playerMoving){ float l=sqrtf(input.x*input.x+input.y*input.y); input.x/=l; input.y/=l; }
 
     playerPosition.x += input.x*d.player.speed*dt;
     playerPosition.y += input.y*d.player.speed*dt;
@@ -294,7 +300,7 @@ void HomeScene::Draw(Game& game)
     DrawCenteredTextInRect(f, "게임하기", gameZone, 32, WHITE);
     DrawCenteredTextInRect(f, "자기", sleepZone, 32, WHITE);
     DrawCenteredTextInRect(f, "과제 수행하기", assignmentZone, 32, WHITE);
-    DrawRectangle((int)playerPosition.x,(int)playerPosition.y,36,36, SKYBLUE);
+    UiWidgets::DrawPlayer(game.Resources(), playerPosition, playerMoving);
 
     UiWidgets::DrawTopStatus(f, d, "집", "이동: WASD/방향키  E: 선택", "ESC: 밖으로");
     UiWidgets::DrawBottomGraphs(f, d);
