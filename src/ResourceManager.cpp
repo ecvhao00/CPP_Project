@@ -43,13 +43,13 @@ void ResourceManager::Load()
         uiFont = GetFontDefault();
     }
 
-    const char* const walk0Paths[] = { "Walk_0.png", "../Walk_0.png", "C:/Users/minky/Downloads/Walk_0.png" };
-    const char* const walk1Paths[] = { "Walk_1.png", "../Walk_1.png", "C:/Users/minky/Downloads/Walk_1.png" };
-    const char* const walk2Paths[] = { "Walk_2.png", "../Walk_2.png", "C:/Users/minky/Downloads/Walk_2.png" };
+    const char* const walk0Paths[] = { "assets/player/Walk_0.png" };
+    const char* const walk1Paths[] = { "assets/player/Walk_1.png" };
+    const char* const walk2Paths[] = { "assets/player/Walk_2.png" };
 
-    playerWalkLoaded[0] = LoadTextureFromFirstExistingPath(walk0Paths, 3, playerWalkFrames[0]);
-    playerWalkLoaded[1] = LoadTextureFromFirstExistingPath(walk1Paths, 3, playerWalkFrames[1]);
-    playerWalkLoaded[2] = LoadTextureFromFirstExistingPath(walk2Paths, 3, playerWalkFrames[2]);
+    playerWalkLoaded[0] = LoadTextureFromFirstExistingPath(walk0Paths, 1, playerWalkFrames[0]);
+    playerWalkLoaded[1] = LoadTextureFromFirstExistingPath(walk1Paths, 1, playerWalkFrames[1]);
+    playerWalkLoaded[2] = LoadTextureFromFirstExistingPath(walk2Paths, 1, playerWalkFrames[2]);
 }
 
 void ResourceManager::Unload()
