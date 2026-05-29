@@ -6,10 +6,34 @@
 #include <algorithm>
 #include <memory>
 
+namespace
+{
+constexpr const char* AssignmentMonsterName = "스타일리시한 C 과제 괴물";
+constexpr const char* MidtermName = "중간고사";
+
+bool IsMidtermBattle(const GameData& data)
+{
+    return data.semester.currentBattleIsExam && data.semester.week == 8;
+}
+
+const char* GetOpponentName(const GameData& data)
+{
+    if (IsMidtermBattle(data)) return MidtermName;
+    if (data.semester.currentBattleIsExam) return "시험";
+    return AssignmentMonsterName;
+}
+
+const char* GetOpponentSubjectMarker(const GameData& data)
+{
+    return IsMidtermBattle(data) ? "가" : "이";
+}
+}
+
 void BattleScene::Enter(Game& game)
 {
     GameData& data = game.Data();
     const bool isExamBattle = data.semester.currentBattleIsExam;
+    const bool isMidtermBattle = IsMidtermBattle(data);
     enemyHp = 12 + data.player.level * 4;
     enemyAttack = 3 + data.player.level;
     if (data.semester.midtermExamDebuff || data.semester.midtermPresentationDebuff || data.semester.finalExamDebuff || data.semester.finalPresentationDebuff)
@@ -18,13 +42,15 @@ void BattleScene::Enter(Game& game)
     }
     enemyTurnTimer = 0.0f;
     state = BattleState::PlayerTurn;
-    message = isExamBattle ? "시험이 시작됐다!" : "과제 괴물이 나타났다!";
+    if (isMidtermBattle) message = "중간고사가 출현했다!!";
+    else message = isExamBattle ? "시험이 시작됐다!" : TextFormat("%s이 나타났다!", AssignmentMonsterName);
 }
 
 void BattleScene::Update(Game& game, float dt)
 {
     GameData& data = game.Data();
-    const char* opponentName = data.semester.currentBattleIsExam ? "시험" : "과제";
+    const char* opponentName = GetOpponentName(data);
+    const char* opponentSubjectMarker = GetOpponentSubjectMarker(data);
 
     switch (state)
     {
@@ -79,7 +105,7 @@ void BattleScene::Update(Game& game, float dt)
             }
             else
             {
-                message = TextFormat("%s이 멘탈을 %d 깎았다!", opponentName, enemyAttack);
+                message = TextFormat("%s%s 멘탈을 %d 깎았다!", opponentName, opponentSubjectMarker, enemyAttack);
                 state = BattleState::PlayerTurn;
             }
         }
@@ -105,25 +131,69 @@ void BattleScene::Draw(Game& game)
 {
     const GameData& data = game.Data();
     const bool isExamBattle = data.semester.currentBattleIsExam;
+    const bool isMidtermBattle = IsMidtermBattle(data);
+    const char* opponentName = GetOpponentName(data);
+    const char* opponentSubjectMarker = GetOpponentSubjectMarker(data);
     auto& f = game.Resources().UiFont();
 
     Rectangle topPanel = { 40, 30, (float)Game::ScreenWidth - 80, 92 };
     Rectangle bottomPanel = { 0, 520, (float)Game::ScreenWidth, 200 };
-    Rectangle playerBody = { 190, 285, 120, 120 };
+    Rectangle playerBody = { 190, 270, 250, 250 };
     Rectangle enemyBody = { 915, 185, 140, 140 };
 
     DrawRectangle(0, 0, Game::ScreenWidth, Game::ScreenHeight, DARKPURPLE);
-    DrawRectangleRec(playerBody, BLUE);
-    DrawRectangleRec(enemyBody, RED);
-    DrawTextEx(f, "학생", {playerBody.x + 34, playerBody.y + playerBody.height + 12}, 28, 1, WHITE);
-    DrawTextEx(f, isExamBattle ? "시험" : "과제", {enemyBody.x + 42, enemyBody.y + enemyBody.height + 12}, 28, 1, WHITE);
+    if (game.Resources().HasPlayerBattleSprite())
+    {
+        Texture2D& playerSprite = game.Resources().PlayerBattleSprite();
+        Rectangle source = { 0, 0, (float)playerSprite.width, (float)playerSprite.height };
+        float scale = playerBody.width / (float)playerSprite.width;
+        Rectangle destination = {
+            playerBody.x,
+            bottomPanel.y - (float)playerSprite.height * scale,
+            (float)playerSprite.width * scale,
+            (float)playerSprite.height * scale
+        };
+        DrawTexturePro(playerSprite, source, destination, { 0, 0 }, 0.0f, WHITE);
+    }
+    else
+    {
+        DrawRectangleRec(playerBody, BLUE);
+    }
+    Vector2 enemyLabelPosition = { enemyBody.x + 42, enemyBody.y + enemyBody.height + 12 };
+    if (isMidtermBattle && game.Resources().HasMidtermSprite())
+    {
+        Texture2D& enemySprite = game.Resources().MidtermSprite();
+        DrawTexture(enemySprite, (int)enemyBody.x, (int)enemyBody.y, WHITE);
+
+        Vector2 enemyNameSize = MeasureTextEx(f, opponentName, 28, 1);
+        enemyLabelPosition = {
+            enemyBody.x + ((float)enemySprite.width - enemyNameSize.x) * 0.5f,
+            enemyBody.y + (float)enemySprite.height + 12
+        };
+    }
+    else if (!isExamBattle && game.Resources().HasAssignmentMonsterSprite())
+    {
+        Texture2D& enemySprite = game.Resources().AssignmentMonsterSprite();
+        DrawTexture(enemySprite, (int)enemyBody.x, (int)enemyBody.y, WHITE);
+
+        Vector2 enemyNameSize = MeasureTextEx(f, AssignmentMonsterName, 24, 1);
+        enemyLabelPosition = {
+            enemyBody.x + ((float)enemySprite.width - enemyNameSize.x) * 0.5f,
+            enemyBody.y + (float)enemySprite.height + 12
+        };
+    }
+    else
+    {
+        DrawRectangleRec(enemyBody, RED);
+    }
+    DrawTextEx(f, opponentName, enemyLabelPosition, isMidtermBattle || isExamBattle ? 28 : 24, 1, WHITE);
 
     DrawRectangleRec(topPanel, Fade(BLACK, 0.55f));
     DrawRectangleLinesEx(topPanel, 2, Fade(RAYWHITE, 0.7f));
     DrawTextEx(f, TextFormat("멘탈 %d/%d", data.player.hp, data.player.maxHp), {70, 50}, 30, 1, WHITE);
     DrawTextEx(f, TextFormat("레벨 %d  공격 %d", data.player.level, data.player.attack), {70, 86}, 22, 1, LIGHTGRAY);
     DrawTextEx(f, "VS", {618, 60}, 38, 2, YELLOW);
-    DrawTextEx(f, TextFormat("%s 체력 %d", isExamBattle ? "시험" : "과제", enemyHp), {930, 50}, 30, 1, WHITE);
+    DrawTextEx(f, TextFormat("%s 체력 %d", opponentName, enemyHp), {930, 50}, isExamBattle ? 30 : 22, 1, WHITE);
     DrawTextEx(f, TextFormat("반격 피해 %d", enemyAttack), {930, 86}, 22, 1, LIGHTGRAY);
 
     DrawRectangleRec(bottomPanel, Fade(BLACK, 0.78f));
@@ -134,6 +204,6 @@ void BattleScene::Draw(Game& game)
         DrawTextEx(f, "[A] 공격", {70, 630}, 26, 1, RAYWHITE);
         DrawTextEx(f, "[H] 회복", {240, 630}, 26, 1, RAYWHITE);
     }
-    else if (state == BattleState::EnemyTurn) DrawTextEx(f, isExamBattle ? "시험이 반격하는 중..." : "과제가 반격하는 중...", {70, 630}, 26, 1, LIGHTGRAY);
+    else if (state == BattleState::EnemyTurn) DrawTextEx(f, TextFormat("%s%s 반격하는 중...", opponentName, opponentSubjectMarker), {70, 630}, 26, 1, LIGHTGRAY);
     else DrawTextEx(f, "[ENTER] 계속", {70, 630}, 26, 1, RAYWHITE);
 }

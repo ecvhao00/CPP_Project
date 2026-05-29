@@ -50,10 +50,55 @@ void ResourceManager::Load()
     playerWalkLoaded[0] = LoadTextureFromFirstExistingPath(walk0Paths, 1, playerWalkFrames[0]);
     playerWalkLoaded[1] = LoadTextureFromFirstExistingPath(walk1Paths, 1, playerWalkFrames[1]);
     playerWalkLoaded[2] = LoadTextureFromFirstExistingPath(walk2Paths, 1, playerWalkFrames[2]);
+
+    const char* const battlePaths[] = { "assets/player/Battle.png", "Assets/player/Battle.png" };
+    playerBattleLoaded = LoadTextureFromFirstExistingPath(battlePaths, 2, playerBattleTexture);
+    if (playerBattleLoaded)
+    {
+        SetTextureFilter(playerBattleTexture, TEXTURE_FILTER_POINT);
+    }
+
+    const char* const assignmentMonsterPaths[] = {
+        "assets/Enemy/Stylish_C_Monster_Battle.png",
+        "Assets/Enemy/Stylish_C_Monster_Battle.png"
+    };
+    assignmentMonsterLoaded = LoadTextureFromFirstExistingPath(assignmentMonsterPaths, 2, assignmentMonsterTexture);
+    if (assignmentMonsterLoaded)
+    {
+        SetTextureFilter(assignmentMonsterTexture, TEXTURE_FILTER_POINT);
+    }
+
+    const char* const midtermPaths[] = {
+        "assets/Enemy/Midterm.png",
+        "Assets/Enemy/Midterm.png"
+    };
+    midtermLoaded = LoadTextureFromFirstExistingPath(midtermPaths, 2, midtermTexture);
+    if (midtermLoaded)
+    {
+        SetTextureFilter(midtermTexture, TEXTURE_FILTER_POINT);
+    }
 }
 
 void ResourceManager::Unload()
 {
+    if (midtermLoaded)
+    {
+        UnloadTexture(midtermTexture);
+        midtermLoaded = false;
+    }
+
+    if (assignmentMonsterLoaded)
+    {
+        UnloadTexture(assignmentMonsterTexture);
+        assignmentMonsterLoaded = false;
+    }
+
+    if (playerBattleLoaded)
+    {
+        UnloadTexture(playerBattleTexture);
+        playerBattleLoaded = false;
+    }
+
     for (int i = 0; i < 3; ++i)
     {
         if (playerWalkLoaded[i])
@@ -89,4 +134,34 @@ Texture2D& ResourceManager::PlayerWalkFrame(int index)
     if (index < 0) index = 0;
     if (index >= 3) index = 2;
     return playerWalkFrames[index];
+}
+
+bool ResourceManager::HasPlayerBattleSprite() const
+{
+    return playerBattleLoaded;
+}
+
+Texture2D& ResourceManager::PlayerBattleSprite()
+{
+    return playerBattleTexture;
+}
+
+bool ResourceManager::HasAssignmentMonsterSprite() const
+{
+    return assignmentMonsterLoaded;
+}
+
+Texture2D& ResourceManager::AssignmentMonsterSprite()
+{
+    return assignmentMonsterTexture;
+}
+
+bool ResourceManager::HasMidtermSprite() const
+{
+    return midtermLoaded;
+}
+
+Texture2D& ResourceManager::MidtermSprite()
+{
+    return midtermTexture;
 }
