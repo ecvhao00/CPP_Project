@@ -66,7 +66,19 @@ void FieldScene::Enter(Game& game)
 void FieldScene::EndDay(Game& game)
 {
     auto& s=game.Data().semester;
-    if(!s.attendedClassToday) s.attendanceScore-=1;
+    if(!s.attendedClassToday)
+    {
+        s.absences += 1;
+        if (s.absences >= 4)
+        {
+            s.gameEnded = true;
+            s.passed = false;
+            s.endingName = "F";
+            message = "결석 4회로 제적되었습니다.";
+            showMessage = true;
+            showCenterMessage = true;
+        }
+    }
 
     s.isNight=true;
     s.homeActionsUsedTonight=0;
@@ -88,7 +100,20 @@ void FieldScene::NextWeek(Game& game)
         return;
     }
 
-    if(!s.foughtToday) s.assignmentScore-=1;
+    if(!s.foughtToday)
+    {
+        s.assignmentMisses += 1;
+        if (s.assignmentMisses >= 5)
+        {
+            s.gameEnded = true;
+            s.passed = false;
+            s.endingName = "F";
+            message = "과제 미제출 5회로 F학점입니다.";
+            showMessage = true;
+            showCenterMessage = true;
+            return;
+        }
+    }
 
     if (s.week == 15)
     {

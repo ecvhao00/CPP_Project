@@ -123,8 +123,8 @@ void Game::JumpToDebugWeek(int week, bool startExamBattle)
     data.semester.week = week;
     data.semester.isNight = false;
     data.semester.actionPoints = data.semester.maxActionPoints;
-    data.semester.assignmentScore = 10;
-    data.semester.attendanceScore = 10;
+    data.semester.assignmentMisses = 0;
+    data.semester.absences = 0;
     data.semester.devPower = week >= 15 ? 30 : 15;
     data.semester.network = week >= 15 ? 20 : 10;
 

@@ -1,29 +1,210 @@
-# Raylib-CPP-Starter-Template-for-VSCODE-V2
-Raylib C++ Starter Template for Visual Studio Code on Windows.
-This demo project contains a bouncing ball raylib example program.
-It works with raylib version 5.0. Tested on both Windows 10 and Windows 11.
+# A+을 노려라!
 
-# How to use this template
-1. Double click on the main.code-workspace file. This will open the template in VS Code.
-2. From the Explorer Window of VS Code navigate to the src folder and double click on the main.cpp file.
-3. Press F5 on the keyboard to compile and run the program.
+`A+을 노려라!`는 raylib 기반 15주 학기 생존 RPG입니다. 플레이어 캐릭터 `웃무`는 개발력, 인맥, 멘탈, 행동력을 관리하면서 과제와 시험을 넘기고 최종 성적을 노립니다.
 
-# What's changed
-The template now uses folders for better organizion of the files. So, all the source code now lives in the src folder.
+## 팀
 
-# Video Tutorial
+팀명: game3조
+팀원: 김민식, 김민규, 김수빈, 석하은
 
-<p align="center">
-  <img src="preview.jpg" alt="" width="800">
-</p>
+## 기본 흐름
 
-<p align="center">
-🎥 <a href="https://www.youtube.com/watch?v=PaAcVk5jUd8">Video Tutorial on YouTube</a>
-</p>
+1. 타이틀 화면에서 `ENTER`를 누르면 게임이 시작됩니다.
+2. 안내 화면을 읽은 뒤 인트로 대사를 진행합니다.
+3. 본게임은 캠퍼스 필드에서 시작됩니다.
+4. 낮에는 공학관에서 수업, 선배 대화, 시험 주차의 시험을 진행합니다.
+5. 밤에는 술자리, 집, 다음 주 진행을 선택할 수 있습니다.
+6. 15주차 종료 시 개발력과 인맥 기준으로 엔딩이 결정됩니다.
 
-<br>
-<br>
-<p align="center">
-| 📺 <a href="https://www.youtube.com/channel/UC3ivOTE5EgpmF2DHLBmWIWg">My YouTube Channel</a>
-| 🌍 <a href="http://www.programmingwithnick.com">My Website</a> | <br>
-</p>
+## 주요 장면 구조
+
+### TitleScene
+
+- 게임 제목과 시작 안내를 표시합니다.
+- `ENTER` 입력 시 데이터를 초기화하고 IntroScene으로 이동합니다.
+
+### IntroScene
+
+- 게임 시스템 안내를 먼저 보여줍니다.
+- 이후 검은 화면과 대사창으로 프롤로그를 진행합니다.
+- 대사창 왼쪽에는 발화자에 맞는 초상화가 표시됩니다.
+  - `웃무`: `assets/NPC/Utmu.png`
+  - `프로페서 K`: `assets/NPC/Professor_K.png`
+  - `선배`: `assets/NPC/Senpai.png`
+
+### FieldScene
+
+- 캠퍼스 필드입니다.
+- 공학관, 술자리, 집, 시간 진행 선택지가 있습니다.
+- 낮에는 공학관에 들어갈 수 있고, 술자리는 막힙니다.
+- 밤에는 집과 술자리를 이용할 수 있습니다.
+- 낮에서 밤, 밤에서 다음 주로 넘어갈 때 페이드 연출이 들어갑니다.
+
+### EngineeringScene
+
+- 공학관 내부입니다.
+- 수업, 선배, 시험, 밖으로 나가기 선택지가 있습니다.
+- 수업은 낮에만 가능합니다.
+- 시험은 8주차와 15주차에만 등장합니다.
+- 이미 시험을 본 상태에서 다시 시험을 선택하면 `시험을 다시 볼 순 없어요!!` 메시지를 표시합니다.
+
+### HomeScene
+
+- 집 내부입니다.
+- 게임하기, 자기, 과제 수행하기, 학교 가기 선택지가 있습니다.
+- `게임하기`는 멘탈을 회복합니다.
+- `과제 수행하기`는 과제 배틀로 진입합니다.
+- `자기`는 다음 주로 넘어갑니다.
+- `학교 가기`는 다시 캠퍼스 필드로 돌아갑니다.
+
+### BattleScene
+
+- 과제, 중간고사, 기말고사 전투를 처리합니다.
+- `A`: 공격
+- `H`: 회복 아이템 사용
+- 승리하면 레벨, 최대 멘탈, 공격력이 증가합니다.
+- 패배하면 번아웃으로 타이틀 화면으로 돌아갑니다.
+
+## 능력치와 자원
+
+### 멘탈
+
+- 전투에서 HP처럼 사용됩니다.
+- 적의 반격을 받으면 감소합니다.
+- 0이 되면 번아웃으로 패배합니다.
+- 집에서 게임하기, 잠자기, 전투 승리 등으로 회복할 수 있습니다.
+
+### 개발력
+
+- 수업을 들으면 증가합니다.
+- 중간고사와 기말고사 관련 디버프 판정에 영향을 줍니다.
+- 최종 엔딩 분기에도 사용됩니다.
+
+### 인맥
+
+- 선배 대화와 술자리로 증가합니다.
+- 발표 관련 디버프 판정에 영향을 줍니다.
+- 최종 엔딩 분기에도 사용됩니다.
+
+### 행동력
+
+- 하루에 사용할 수 있는 행동 횟수입니다.
+- 수업, 선배 대화, 술자리, 집 행동 일부에 사용됩니다.
+- 낮에서 밤, 밤에서 다음 주로 넘어갈 때 회복됩니다.
+
+### 과제 미제출
+
+- 좌하단 게이지에 `과제 미제출`로 표시됩니다.
+- 밤에서 다음 주로 넘어갈 때 그날 과제 배틀을 하지 않았다면 1회 증가합니다.
+- 5회가 되면 즉시 F 엔딩 처리됩니다.
+
+### 결석
+
+- 좌하단 게이지에 `결석`으로 표시됩니다.
+- 낮에서 밤으로 넘어갈 때 그날 수업을 듣지 않았다면 1회 증가합니다.
+- 4회가 되면 즉시 F 엔딩 처리됩니다.
+
+## 주차 이벤트
+
+### 8주차
+
+- 중간고사 주차입니다.
+- 공학관에 시험 선택지가 등장합니다.
+- `Midterm.png`가 중간고사 전투 스프라이트로 사용됩니다.
+- 8주차에 시험을 치르지 않고 다음 주로 넘어가면 F 엔딩입니다.
+- 8주차 진입 시 개발력이 12 미만이면 중간고사 디버프가 발생합니다.
+
+### 9주차
+
+- 중간발표 관련 체크 주차입니다.
+- 인맥이 10 미만이면 중간발표 디버프가 발생합니다.
+
+### 14주차
+
+- 기말고사 사전 체크 주차입니다.
+- 개발력이 20 미만이면 기말고사 디버프가 발생합니다.
+
+### 15주차
+
+- 기말고사 주차입니다.
+- 공학관에 시험 선택지가 등장합니다.
+- `Final.png`가 기말고사 전투 스프라이트로 사용됩니다.
+- 기말고사 양옆에는 `Stylish_C_Monster_Battle.png`가 장식으로 표시됩니다.
+- 15주차에 시험을 치르지 않고 학기를 끝내면 F 엔딩입니다.
+- 15주차 진입 시 인맥이 18 미만이면 기말발표 디버프가 발생합니다.
+
+## 디버프 구조
+
+다음 조건 중 하나라도 충족하지 못하면 디버프가 생깁니다.
+
+- 8주차: 개발력 12 미만이면 중간고사 디버프
+- 9주차: 인맥 10 미만이면 중간발표 디버프
+- 14주차: 개발력 20 미만이면 기말고사 디버프
+- 15주차: 인맥 18 미만이면 기말발표 디버프
+
+전투에서는 발생한 디버프 수에 따라 플레이어 공격력이 낮아지고, 적의 반격 피해가 증가합니다.
+
+## 엔딩 분기
+
+### F 엔딩
+
+다음 중 하나라도 발생하면 F 엔딩입니다.
+
+- 시험 주차인 8주차 또는 15주차에 시험을 보지 않고 넘어감
+- 과제 미제출 누적 5회 도달
+- 결석 누적 4회 도달
+- 전투에서 멘탈이 0이 되어 패배
+
+### A+ 엔딩
+
+15주차 종료 시 다음 조건을 모두 만족하면 A+ 엔딩입니다.
+
+- 개발력 50 이상
+- 인맥 35 이상
+
+### B+ 엔딩
+
+A+ 조건을 만족하지 못했지만 다음 조건을 모두 만족하면 B+ 엔딩입니다.
+
+- 개발력 30 이상
+- 인맥 20 이상
+
+### C 엔딩
+
+F 엔딩은 피했지만 A+ 또는 B+ 조건을 만족하지 못하면 C 엔딩입니다.
+
+## 주요 자산
+
+- 플레이어 필드 이동: `assets/player/Walk_0.png`, `Walk_1.png`, `Walk_2.png`
+- 플레이어 전투 스프라이트: `assets/player/Battle.png`
+- 과제 몬스터: `assets/Enemy/Stylish_C_Monster_Battle.png`
+- 중간고사: `assets/Enemy/Midterm.png`
+- 기말고사: `assets/Enemy/Final.png`
+- 초상화: `assets/NPC/*.png`
+
+## 디버그 빌드 단축키
+
+`BUILD_MODE=DEBUG`로 빌드하면 좌상단에 디버그 안내가 표시됩니다.
+
+- `F8`: 8주차로 이동
+- `F9`: 15주차로 이동
+- `F10`: 15주차 기말고사 배틀로 바로 진입
+- `F11`: 멘탈, 행동력, 회복 아이템 복구
+- `F5`: 개발력 +5
+- `Shift + F5`: 개발력 -5
+- `F6`: 인맥 +5
+- `Shift + F6`: 인맥 -5
+
+## 빌드
+
+디버그 빌드:
+
+```powershell
+C:\raylib\w64devkit\bin\mingw32-make.exe RAYLIB_PATH=C:/raylib/raylib PROJECT_NAME=main OBJS=src/*.cpp BUILD_MODE=DEBUG
+```
+
+릴리즈 빌드:
+
+```powershell
+C:\raylib\w64devkit\bin\mingw32-make.exe RAYLIB_PATH=C:/raylib/raylib PROJECT_NAME=main OBJS=src/*.cpp BUILD_MODE=RELEASE
+```

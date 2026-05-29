@@ -13,7 +13,7 @@ float ClampRatio(int value, int maxValue)
 
 void DrawBar(Font& font, const char* label, int value, int maxValue, Rectangle bar, Color fill)
 {
-    DrawTextEx(font, TextFormat("%s %d/%d", label, value, maxValue), { bar.x - 115, bar.y - 6 }, 18, 1, RAYWHITE);
+    DrawTextEx(font, TextFormat("%s %d/%d", label, value, maxValue), { bar.x - 145, bar.y - 6 }, 18, 1, RAYWHITE);
     DrawRectangleRec(bar, DARKGRAY);
     DrawRectangle((int)bar.x, (int)bar.y, (int)(bar.width * ClampRatio(value, maxValue)), (int)bar.height, fill);
     DrawRectangleLinesEx(bar, 1, Fade(RAYWHITE, 0.85f));
@@ -83,8 +83,8 @@ void DrawBottomGraphs(Font& font, const GameData& data)
 
     DrawRectangle(30, 635, 555, 75, Fade(BLACK, 0.62f));
     DrawRectangleLines(30, 635, 555, 75, Fade(RAYWHITE, 0.55f));
-    DrawBar(font, "과제", semester.assignmentScore, 10, { 160, 648, 385, 12 }, SKYBLUE);
-    DrawBar(font, "출석", semester.attendanceScore, 10, { 160, 672, 385, 12 }, LIME);
-    DrawBar(font, "행동력", semester.actionPoints, semester.maxActionPoints, { 160, 696, 385, 12 }, ORANGE);
+    DrawBar(font, "과제 미제출", semester.assignmentMisses, 5, { 190, 648, 355, 12 }, RED);
+    DrawBar(font, "결석", semester.absences, 4, { 190, 672, 355, 12 }, ORANGE);
+    DrawBar(font, "행동력", semester.actionPoints, semester.maxActionPoints, { 190, 696, 355, 12 }, SKYBLUE);
 }
 }

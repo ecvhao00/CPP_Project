@@ -80,7 +80,17 @@ std::string HomeScene::StartNextWeek(Game& game)
         return "시험 주에 시험을 치르지 못했다.";
     }
 
-    if (!s.foughtToday) s.assignmentScore -= 1;
+    if (!s.foughtToday)
+    {
+        s.assignmentMisses += 1;
+        if (s.assignmentMisses >= 5)
+        {
+            s.gameEnded = true;
+            s.passed = false;
+            s.endingName = "F";
+            return "과제 미제출 5회로 F학점입니다.";
+        }
+    }
 
     if (s.week == 15)
     {

@@ -18,8 +18,8 @@ struct SemesterData
     int week = 1;
     bool isNight = false;
 
-    int assignmentScore = 10;
-    int attendanceScore = 10;
+    int assignmentMisses = 0;
+    int absences = 0;
     int devPower = 5;
     int network = 3;
     int maxActionPoints = 3;
