@@ -25,6 +25,11 @@ public:
 
 private:
     void ApplySceneChange();
+#if defined(DEBUG)
+    void HandleDebugShortcuts();
+    void JumpToDebugWeek(int week, bool startExamBattle);
+    void DrawDebugOverlay();
+#endif
 
 private:
     bool running = true;

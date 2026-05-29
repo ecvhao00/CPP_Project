@@ -247,6 +247,7 @@ void HomeScene::Update(Game& game, float dt)
     bool nearGame = CheckCollisionRecs(playerRect, gameZone);
     bool nearSleep = CheckCollisionRecs(playerRect, sleepZone);
     bool nearAssignment = CheckCollisionRecs(playerRect, assignmentZone);
+    bool nearSchool = CheckCollisionRecs(playerRect, schoolZone);
 
     if (IsKeyPressed(KEY_E))
     {
@@ -269,6 +270,12 @@ void HomeScene::Update(Game& game, float dt)
             if (!UseHomeAction(game)) return;
             s.currentBattleIsExam = false;
             game.ChangeScene(std::make_unique<BattleScene>());
+            return;
+        }
+        else if (nearSchool)
+        {
+            d.player.position = { 360.0f, 545.0f };
+            game.ChangeScene(std::make_unique<FieldScene>());
             return;
         }
     }
@@ -297,9 +304,11 @@ void HomeScene::Draw(Game& game)
     DrawRectangleRec(gameZone, Color{60, 105, 180, 255});
     DrawRectangleRec(sleepZone, Color{80, 80, 120, 255});
     DrawRectangleRec(assignmentZone, Color{145, 70, 70, 255});
+    DrawRectangleRec(schoolZone, Color{48, 112, 92, 255});
     DrawCenteredTextInRect(f, "게임하기", gameZone, 32, WHITE);
     DrawCenteredTextInRect(f, "자기", sleepZone, 32, WHITE);
     DrawCenteredTextInRect(f, "과제 수행하기", assignmentZone, 32, WHITE);
+    DrawCenteredTextInRect(f, "학교 가기", schoolZone, 32, WHITE);
     UiWidgets::DrawPlayer(game.Resources(), playerPosition, playerMoving);
 
     UiWidgets::DrawTopStatus(f, d, "집", "이동: WASD/방향키  E: 선택", "ESC: 밖으로");

@@ -16,6 +16,14 @@ public:
     Texture2D& AssignmentMonsterSprite();
     bool HasMidtermSprite() const;
     Texture2D& MidtermSprite();
+    bool HasFinalSprite() const;
+    Texture2D& FinalSprite();
+    bool HasUtmuPortrait() const;
+    Texture2D& UtmuPortrait();
+    bool HasProfessorKPortrait() const;
+    Texture2D& ProfessorKPortrait();
+    bool HasSenpaiPortrait() const;
+    Texture2D& SenpaiPortrait();
 
 private:
     Font uiFont{};
@@ -28,4 +36,12 @@ private:
     bool assignmentMonsterLoaded = false;
     Texture2D midtermTexture{};
     bool midtermLoaded = false;
+    Texture2D finalTexture{};
+    bool finalLoaded = false;
+    Texture2D utmuPortraitTexture{};
+    bool utmuPortraitLoaded = false;
+    Texture2D professorKPortraitTexture{};
+    bool professorKPortraitLoaded = false;
+    Texture2D senpaiPortraitTexture{};
+    bool senpaiPortraitLoaded = false;
 };

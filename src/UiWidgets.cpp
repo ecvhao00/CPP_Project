@@ -37,6 +37,25 @@ void DrawPlayer(ResourceManager& resources, Vector2 position, bool moving)
     DrawTexturePro(texture, source, dest, { 0, 0 }, 0.0f, WHITE);
 }
 
+void DrawPortrait(Texture2D& texture, Rectangle area)
+{
+    DrawRectangleRec(area, Fade(BLACK, 0.35f));
+
+    float scale = area.width / (float)texture.width;
+    float heightScale = area.height / (float)texture.height;
+    if (heightScale < scale) scale = heightScale;
+
+    Rectangle source = { 0, 0, (float)texture.width, (float)texture.height };
+    Rectangle dest = {
+        area.x + (area.width - (float)texture.width * scale) * 0.5f,
+        area.y + (area.height - (float)texture.height * scale) * 0.5f,
+        (float)texture.width * scale,
+        (float)texture.height * scale
+    };
+    DrawTexturePro(texture, source, dest, { 0, 0 }, 0.0f, WHITE);
+    DrawRectangleLinesEx(area, 3, RAYWHITE);
+}
+
 void DrawTopStatus(Font& font, const GameData& data, const char* location, const char* hint1, const char* hint2)
 {
     const auto& player = data.player;

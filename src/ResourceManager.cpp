@@ -77,10 +77,74 @@ void ResourceManager::Load()
     {
         SetTextureFilter(midtermTexture, TEXTURE_FILTER_POINT);
     }
+
+    const char* const finalPaths[] = {
+        "assets/Enemy/Final.png",
+        "Assets/Enemy/Final.png"
+    };
+    finalLoaded = LoadTextureFromFirstExistingPath(finalPaths, 2, finalTexture);
+    if (finalLoaded)
+    {
+        SetTextureFilter(finalTexture, TEXTURE_FILTER_POINT);
+    }
+
+    const char* const utmuPortraitPaths[] = {
+        "assets/NPC/Utmu.png",
+        "Assets/NPC/Utmu.png"
+    };
+    utmuPortraitLoaded = LoadTextureFromFirstExistingPath(utmuPortraitPaths, 2, utmuPortraitTexture);
+    if (utmuPortraitLoaded)
+    {
+        SetTextureFilter(utmuPortraitTexture, TEXTURE_FILTER_POINT);
+    }
+
+    const char* const professorKPortraitPaths[] = {
+        "assets/NPC/Professor_K.png",
+        "Assets/NPC/Professor_K.png"
+    };
+    professorKPortraitLoaded = LoadTextureFromFirstExistingPath(professorKPortraitPaths, 2, professorKPortraitTexture);
+    if (professorKPortraitLoaded)
+    {
+        SetTextureFilter(professorKPortraitTexture, TEXTURE_FILTER_POINT);
+    }
+
+    const char* const senpaiPortraitPaths[] = {
+        "assets/NPC/Senpai.png",
+        "Assets/NPC/Senpai.png"
+    };
+    senpaiPortraitLoaded = LoadTextureFromFirstExistingPath(senpaiPortraitPaths, 2, senpaiPortraitTexture);
+    if (senpaiPortraitLoaded)
+    {
+        SetTextureFilter(senpaiPortraitTexture, TEXTURE_FILTER_POINT);
+    }
 }
 
 void ResourceManager::Unload()
 {
+    if (senpaiPortraitLoaded)
+    {
+        UnloadTexture(senpaiPortraitTexture);
+        senpaiPortraitLoaded = false;
+    }
+
+    if (professorKPortraitLoaded)
+    {
+        UnloadTexture(professorKPortraitTexture);
+        professorKPortraitLoaded = false;
+    }
+
+    if (utmuPortraitLoaded)
+    {
+        UnloadTexture(utmuPortraitTexture);
+        utmuPortraitLoaded = false;
+    }
+
+    if (finalLoaded)
+    {
+        UnloadTexture(finalTexture);
+        finalLoaded = false;
+    }
+
     if (midtermLoaded)
     {
         UnloadTexture(midtermTexture);
@@ -164,4 +228,44 @@ bool ResourceManager::HasMidtermSprite() const
 Texture2D& ResourceManager::MidtermSprite()
 {
     return midtermTexture;
+}
+
+bool ResourceManager::HasFinalSprite() const
+{
+    return finalLoaded;
+}
+
+Texture2D& ResourceManager::FinalSprite()
+{
+    return finalTexture;
+}
+
+bool ResourceManager::HasUtmuPortrait() const
+{
+    return utmuPortraitLoaded;
+}
+
+Texture2D& ResourceManager::UtmuPortrait()
+{
+    return utmuPortraitTexture;
+}
+
+bool ResourceManager::HasProfessorKPortrait() const
+{
+    return professorKPortraitLoaded;
+}
+
+Texture2D& ResourceManager::ProfessorKPortrait()
+{
+    return professorKPortraitTexture;
+}
+
+bool ResourceManager::HasSenpaiPortrait() const
+{
+    return senpaiPortraitLoaded;
+}
+
+Texture2D& ResourceManager::SenpaiPortrait()
+{
+    return senpaiPortraitTexture;
 }

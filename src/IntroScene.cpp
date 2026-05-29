@@ -1,6 +1,7 @@
 #include "IntroScene.h"
 #include "FieldScene.h"
 #include "Game.h"
+#include "UiWidgets.h"
 #include "raylib.h"
 #include <memory>
 #include <utility>
@@ -12,6 +13,28 @@ void DrawCenteredText(Font& font, const char* text, float y, float fontSize, Col
     Vector2 size = MeasureTextEx(font, text, fontSize, 1);
     DrawTextEx(font, text, { (Game::ScreenWidth - size.x) * 0.5f, y }, fontSize, 1, color);
 }
+
+bool DrawSpeakerPortrait(Game& game, const std::string& speaker, Rectangle area)
+{
+    ResourceManager& resources = game.Resources();
+    if (speaker == "웃무" && resources.HasUtmuPortrait())
+    {
+        UiWidgets::DrawPortrait(resources.UtmuPortrait(), area);
+        return true;
+    }
+    if (speaker == "프로페서 K" && resources.HasProfessorKPortrait())
+    {
+        UiWidgets::DrawPortrait(resources.ProfessorKPortrait(), area);
+        return true;
+    }
+    if (speaker == "선배" && resources.HasSenpaiPortrait())
+    {
+        UiWidgets::DrawPortrait(resources.SenpaiPortrait(), area);
+        return true;
+    }
+
+    return false;
+}
 }
 
 void IntroScene::Enter(Game& game)
@@ -20,23 +43,23 @@ void IntroScene::Enter(Game& game)
     phase = Phase::Help;
     dialogueIndex = 0;
     dialogueLines = {
-        {"주인공", "하. . . 이번학기 공부 잘하는 사람들이 너무 많은데 A+ 맞을 수 있을까?"},
-        {"주인공", "장학금. . . 꼭 받아야 하는데. . ."},
-        {"교수", "자 새로운 학기가 시작 되었네 이번학기도 공부 열심히 해서 다들 좋은 성적 받길 바라네"},
-        {"교수", "물론 A+을 받는 사람은 단 몇명 밖에 안되겠지만 말이야..."},
-        {"주인공", ". . ."},
-        {"교수", "어쨋든 공부하다가 궁금한게 있으면 나에게 오게 좋은 성적을 받는데 도움이 될걸세"},
-        {"안내", "교수에게 말을 걸면 수업을 들을 수 있습니다. 수업은 체력 관리와 개발력 성장에 중요합니다."},
+        {"웃무", "하. . . 이번학기 공부 잘하는 사람들이 너무 많은데 A+ 맞을 수 있을까?"},
+        {"웃무", "장학금. . . 꼭 받아야 하는데. . ."},
+        {"프로페서 K", "자 새로운 학기가 시작 되었네 이번학기도 공부 열심히 해서 다들 좋은 성적 받길 바라네"},
+        {"프로페서 K", "물론 A+을 받는 사람은 단 몇명 밖에 안되겠지만 말이야..."},
+        {"웃무", ". . ."},
+        {"프로페서 K", "어쨋든 공부하다가 궁금한게 있으면 나에게 오게 좋은 성적을 받는데 도움이 될걸세"},
+        {"안내", "프로페서 K에게 말을 걸면 수업을 들을 수 있습니다. 수업은 체력 관리와 개발력 성장에 중요합니다."},
         {"안내", "체력은 전투에서 버티는 힘이고, 개발력은 시험과 과제 해결에 영향을 줍니다."},
-        {"주인공", "하. . ."},
+        {"웃무", "하. . ."},
         {"선배", "? 왜 한숨이야? 뭐 고민있어?"},
         {"안내", "선배는 내가 친하게 지내는 유일한 선배이다. 인맥이 넓고 다양한 사람들과 친하게 지낸다."},
-        {"주인공", "아무것도 아니에요 선배"},
+        {"웃무", "아무것도 아니에요 선배"},
         {"선배", "뭐 그럼 다행이고 그나저나 새학기 시작했는데 너도 사람들 좀 만나야지"},
         {"선배", "소심하다고 혼자서 학교생활하지 말고 가끔은 회식에 참여해서 기분전환 하는것도 좋아"},
         {"선배", "인맥도 성적에 도움이 된다니까?"},
         {"안내", "선배에게 말을 걸면 인맥을 올릴 수 있습니다. 인맥은 발표와 학기 평가에 영향을 줍니다."},
-        {"주인공", "네 생각해볼께요 선배"},
+        {"웃무", "네 생각해볼께요 선배"},
         {"선배", "그래 그럼 나는 오늘 회식이 있어서 이만"}
     };
 }
@@ -105,11 +128,17 @@ void IntroScene::DrawDialogue(Game& game)
     DrawRectangle(0, 0, Game::ScreenWidth, Game::ScreenHeight, BLACK);
 
     Rectangle panel = { 70, 485, 1140, 190 };
+    Rectangle portrait = { 95, 515, 145, 145 };
+    bool hasPortrait = line.speaker == "웃무" || line.speaker == "프로페서 K" || line.speaker == "선배";
+    float textX = hasPortrait ? 270.0f : 105.0f;
+
     DrawRectangleRec(panel, Fade(BLACK, 0.92f));
     DrawRectangleLinesEx(panel, 3, RAYWHITE);
+    hasPortrait = DrawSpeakerPortrait(game, line.speaker, portrait);
+    textX = hasPortrait ? 270.0f : 105.0f;
 
-    DrawTextEx(f, line.speaker.c_str(), { 105, 510 }, 28, 1, YELLOW);
-    DrawTextEx(f, line.text.c_str(), { 105, 555 }, 28, 1, RAYWHITE);
+    DrawTextEx(f, line.speaker.c_str(), { textX, 510 }, 28, 1, YELLOW);
+    DrawTextEx(f, line.text.c_str(), { textX, 555 }, 28, 1, RAYWHITE);
     DrawTextEx(f, TextFormat("%d/%d", dialogueIndex + 1, (int)dialogueLines.size()), { 1050, 630 }, 22, 1, LIGHTGRAY);
     DrawTextEx(f, "E/ENTER: 다음", { 1110, 630 }, 22, 1, LIGHTGRAY);
 }

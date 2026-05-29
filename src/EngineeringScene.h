@@ -25,7 +25,7 @@ private:
     void BeginDialogue(DialogueSpeaker speaker, const char* speakerName, std::vector<std::string> lines);
     void AdvanceDialogue();
     void DrawDialogue(Game& game);
-    void DrawDialoguePortrait(Font& font, Rectangle area) const;
+    void DrawDialoguePortrait(Game& game, Rectangle area) const;
 
     Rectangle classZone = { 140, 150, 300, 160 };
     Rectangle seniorZone = { 520, 150, 300, 160 };

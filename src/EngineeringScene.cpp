@@ -10,14 +10,14 @@
 namespace
 {
 const std::vector<std::string> ProfessorKClassDialogue = {
-    "프로페서 K: 오늘은 코드가 왜 터지는지부터 보자.",
-    "프로페서 K: 좋은 개발자는 에러 메시지를 무시하지 않는다.",
+    "오늘은 코드가 왜 터지는지부터 보자.",
+    "좋은 개발자는 에러 메시지를 무시하지 않는다.",
     "수업을 들었다. 개발력 +2"
 };
 
 const std::vector<std::string> SeniorSocialDialogue = {
-    "선배: 막히면 혼자 끙끙대지 말고 물어봐.",
-    "선배: 대신 질문하기 전에 어디까지 봤는지는 정리해두고.",
+    "막히면 혼자 끙끙대지 말고 물어봐.",
+    "대신 질문하기 전에 어디까지 봤는지는 정리해두고.",
     "선배와 대화했다. 인맥도 +1"
 };
 
@@ -160,6 +160,11 @@ void EngineeringScene::Update(Game& game, float dt)
         }
         else if (nearExam)
         {
+            if (s.tookExamToday)
+            {
+                ShowMessage("시험을 다시 볼 순 없어요!!", true);
+                return;
+            }
             if (!UseActionPoint(game)) return;
             s.currentBattleIsExam = true;
             game.ChangeScene(std::make_unique<BattleScene>());
@@ -174,10 +179,23 @@ void EngineeringScene::Update(Game& game, float dt)
     }
 }
 
-void EngineeringScene::DrawDialoguePortrait(Font& font, Rectangle area) const
+void EngineeringScene::DrawDialoguePortrait(Game& game, Rectangle area) const
 {
     if (dialogueSpeaker == DialogueSpeaker::None) return;
 
+    ResourceManager& resources = game.Resources();
+    if (dialogueSpeaker == DialogueSpeaker::ProfessorK && resources.HasProfessorKPortrait())
+    {
+        UiWidgets::DrawPortrait(resources.ProfessorKPortrait(), area);
+        return;
+    }
+    if (dialogueSpeaker == DialogueSpeaker::Senior && resources.HasSenpaiPortrait())
+    {
+        UiWidgets::DrawPortrait(resources.SenpaiPortrait(), area);
+        return;
+    }
+
+    Font& font = game.Resources().UiFont();
     Color background = dialogueSpeaker == DialogueSpeaker::ProfessorK ? DARKBLUE : DARKGREEN;
     Color jacket = dialogueSpeaker == DialogueSpeaker::ProfessorK ? DARKGRAY : BLUE;
     const char* label = dialogueSpeaker == DialogueSpeaker::ProfessorK ? "K" : "선배";
@@ -217,7 +235,7 @@ void EngineeringScene::DrawDialogue(Game& game)
     DrawRectangle(0, 0, Game::ScreenWidth, Game::ScreenHeight, Fade(BLACK, 0.25f));
     DrawRectangleRec(panel, Fade(BLACK, 0.88f));
     DrawRectangleLinesEx(panel, 3, RAYWHITE);
-    DrawDialoguePortrait(f, portrait);
+    DrawDialoguePortrait(game, portrait);
 
     DrawTextEx(f, dialogueName.c_str(), { textX, 510 }, 28, 1, YELLOW);
     DrawTextEx(f, dialogueLines[dialogueLineIndex].c_str(), { textX, 555 }, 29, 1, RAYWHITE);

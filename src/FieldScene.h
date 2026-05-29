@@ -40,7 +40,7 @@ private:
     void BeginDialogue(DialogueSpeaker speaker, const char* speakerName, std::vector<std::string> lines);
     void AdvanceDialogue();
     void DrawDialogue(Game& game);
-    void DrawDialoguePortrait(Font& font, Rectangle area) const;
+    void DrawDialoguePortrait(Game& game, Rectangle area) const;
 
     Rectangle engineeringZone = { 70, 75, 360, 155 };
     Rectangle barZone = { 70, 300, 240, 130 };

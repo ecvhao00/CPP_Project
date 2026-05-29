@@ -28,7 +28,7 @@ void TitleScene::Update(Game& game, float dt)
 void TitleScene::Draw(Game& game)
 {
     auto& f = game.Resources().UiFont();
-    DrawCenteredText(f, "UNIV SURVIVAL : 15 WEEKS", 155, 56, 2, RAYWHITE);
+    DrawCenteredText(f, "A+을 노려라!", 155, 64, 2, RAYWHITE);
     DrawCenteredText(f, "15주 학기 생존 RPG", 225, 30, 1, LIGHTGRAY);
 
     DrawRectangle(390, 314, 500, 2, Fade(RAYWHITE, 0.35f));

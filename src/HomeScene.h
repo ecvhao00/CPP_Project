@@ -28,6 +28,7 @@ private:
     Rectangle gameZone = { 120, 160, 260, 150 };
     Rectangle sleepZone = { 510, 160, 260, 150 };
     Rectangle assignmentZone = { 120, 430, 260, 150 };
+    Rectangle schoolZone = { 510, 430, 260, 150 };
     Vector2 playerPosition = { 600.0f, 520.0f };
     bool playerMoving = false;
 

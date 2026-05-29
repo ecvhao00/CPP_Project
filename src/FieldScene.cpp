@@ -203,10 +203,23 @@ void FieldScene::AdvanceDialogue()
     }
 }
 
-void FieldScene::DrawDialoguePortrait(Font& font, Rectangle area) const
+void FieldScene::DrawDialoguePortrait(Game& game, Rectangle area) const
 {
     if (dialogueSpeaker == DialogueSpeaker::None) return;
 
+    ResourceManager& resources = game.Resources();
+    if (dialogueSpeaker == DialogueSpeaker::ProfessorK && resources.HasProfessorKPortrait())
+    {
+        UiWidgets::DrawPortrait(resources.ProfessorKPortrait(), area);
+        return;
+    }
+    if (dialogueSpeaker == DialogueSpeaker::Senior && resources.HasSenpaiPortrait())
+    {
+        UiWidgets::DrawPortrait(resources.SenpaiPortrait(), area);
+        return;
+    }
+
+    Font& font = game.Resources().UiFont();
     Color background = dialogueSpeaker == DialogueSpeaker::ProfessorK ? DARKBLUE : DARKGREEN;
     Color jacket = dialogueSpeaker == DialogueSpeaker::ProfessorK ? DARKGRAY : BLUE;
     const char* label = dialogueSpeaker == DialogueSpeaker::ProfessorK ? "K" : "선배";
@@ -247,7 +260,7 @@ void FieldScene::DrawDialogue(Game& game)
     DrawRectangle(0, 0, Game::ScreenWidth, Game::ScreenHeight, Fade(BLACK, 0.25f));
     DrawRectangleRec(panel, Fade(BLACK, 0.88f));
     DrawRectangleLinesEx(panel, 3, RAYWHITE);
-    DrawDialoguePortrait(f, portrait);
+    DrawDialoguePortrait(game, portrait);
 
     DrawTextEx(f, dialogueName.c_str(), { textX, 510 }, 28, 1, YELLOW);
     DrawTextEx(f, dialogueLines[dialogueLineIndex].c_str(), { textX, 555 }, 29, 1, RAYWHITE);

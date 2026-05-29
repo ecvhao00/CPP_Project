@@ -10,22 +10,29 @@ namespace
 {
 constexpr const char* AssignmentMonsterName = "스타일리시한 C 과제 괴물";
 constexpr const char* MidtermName = "중간고사";
+constexpr const char* FinalName = "기말고사";
 
 bool IsMidtermBattle(const GameData& data)
 {
     return data.semester.currentBattleIsExam && data.semester.week == 8;
 }
 
+bool IsFinalBattle(const GameData& data)
+{
+    return data.semester.currentBattleIsExam && data.semester.week == 15;
+}
+
 const char* GetOpponentName(const GameData& data)
 {
     if (IsMidtermBattle(data)) return MidtermName;
+    if (IsFinalBattle(data)) return FinalName;
     if (data.semester.currentBattleIsExam) return "시험";
     return AssignmentMonsterName;
 }
 
 const char* GetOpponentSubjectMarker(const GameData& data)
 {
-    return IsMidtermBattle(data) ? "가" : "이";
+    return IsMidtermBattle(data) || IsFinalBattle(data) ? "가" : "이";
 }
 }
 
@@ -34,6 +41,7 @@ void BattleScene::Enter(Game& game)
     GameData& data = game.Data();
     const bool isExamBattle = data.semester.currentBattleIsExam;
     const bool isMidtermBattle = IsMidtermBattle(data);
+    const bool isFinalBattle = IsFinalBattle(data);
     enemyHp = 12 + data.player.level * 4;
     enemyAttack = 3 + data.player.level;
     if (data.semester.midtermExamDebuff || data.semester.midtermPresentationDebuff || data.semester.finalExamDebuff || data.semester.finalPresentationDebuff)
@@ -43,6 +51,7 @@ void BattleScene::Enter(Game& game)
     enemyTurnTimer = 0.0f;
     state = BattleState::PlayerTurn;
     if (isMidtermBattle) message = "중간고사가 출현했다!!";
+    else if (isFinalBattle) message = "기말고사가 출현했다!!";
     else message = isExamBattle ? "시험이 시작됐다!" : TextFormat("%s이 나타났다!", AssignmentMonsterName);
 }
 
@@ -132,6 +141,7 @@ void BattleScene::Draw(Game& game)
     const GameData& data = game.Data();
     const bool isExamBattle = data.semester.currentBattleIsExam;
     const bool isMidtermBattle = IsMidtermBattle(data);
+    const bool isFinalBattle = IsFinalBattle(data);
     const char* opponentName = GetOpponentName(data);
     const char* opponentSubjectMarker = GetOpponentSubjectMarker(data);
     auto& f = game.Resources().UiFont();
@@ -140,8 +150,9 @@ void BattleScene::Draw(Game& game)
     Rectangle bottomPanel = { 0, 520, (float)Game::ScreenWidth, 200 };
     Rectangle playerBody = { 190, 270, 250, 250 };
     Rectangle enemyBody = { 915, 185, 140, 140 };
+    Rectangle examBody = { enemyBody.x - 100.0f, enemyBody.y, enemyBody.width, enemyBody.height };
 
-    DrawRectangle(0, 0, Game::ScreenWidth, Game::ScreenHeight, DARKPURPLE);
+    DrawRectangle(0, 0, Game::ScreenWidth, Game::ScreenHeight, LIGHTGRAY);
     if (game.Resources().HasPlayerBattleSprite())
     {
         Texture2D& playerSprite = game.Resources().PlayerBattleSprite();
@@ -160,15 +171,42 @@ void BattleScene::Draw(Game& game)
         DrawRectangleRec(playerBody, BLUE);
     }
     Vector2 enemyLabelPosition = { enemyBody.x + 42, enemyBody.y + enemyBody.height + 12 };
-    if (isMidtermBattle && game.Resources().HasMidtermSprite())
+    if (isFinalBattle && game.Resources().HasFinalSprite())
     {
-        Texture2D& enemySprite = game.Resources().MidtermSprite();
-        DrawTexture(enemySprite, (int)enemyBody.x, (int)enemyBody.y, WHITE);
+        Texture2D& enemySprite = game.Resources().FinalSprite();
+        float finalScale = 1.5f;
+        Rectangle finalDestination = {
+            examBody.x - 15.0f,
+            examBody.y - 2.0f,
+            (float)enemySprite.width * finalScale,
+            (float)enemySprite.height * finalScale
+        };
+
+        if (game.Resources().HasAssignmentMonsterSprite())
+        {
+            Texture2D& decorSprite = game.Resources().AssignmentMonsterSprite();
+            DrawTexture(decorSprite, 635, 215, Fade(WHITE, 0.9f));
+            DrawTexture(decorSprite, 1030, 215, Fade(WHITE, 0.9f));
+        }
+
+        Rectangle source = { 0, 0, (float)enemySprite.width, (float)enemySprite.height };
+        DrawTexturePro(enemySprite, source, finalDestination, { 0, 0 }, 0.0f, WHITE);
 
         Vector2 enemyNameSize = MeasureTextEx(f, opponentName, 28, 1);
         enemyLabelPosition = {
-            enemyBody.x + ((float)enemySprite.width - enemyNameSize.x) * 0.5f,
-            enemyBody.y + (float)enemySprite.height + 12
+            finalDestination.x + (finalDestination.width - enemyNameSize.x) * 0.5f,
+            finalDestination.y + finalDestination.height + 12
+        };
+    }
+    else if (isMidtermBattle && game.Resources().HasMidtermSprite())
+    {
+        Texture2D& enemySprite = game.Resources().MidtermSprite();
+        DrawTexture(enemySprite, (int)examBody.x, (int)examBody.y, WHITE);
+
+        Vector2 enemyNameSize = MeasureTextEx(f, opponentName, 28, 1);
+        enemyLabelPosition = {
+            examBody.x + ((float)enemySprite.width - enemyNameSize.x) * 0.5f,
+            examBody.y + (float)enemySprite.height + 12
         };
     }
     else if (!isExamBattle && game.Resources().HasAssignmentMonsterSprite())
@@ -186,7 +224,7 @@ void BattleScene::Draw(Game& game)
     {
         DrawRectangleRec(enemyBody, RED);
     }
-    DrawTextEx(f, opponentName, enemyLabelPosition, isMidtermBattle || isExamBattle ? 28 : 24, 1, WHITE);
+    DrawTextEx(f, opponentName, enemyLabelPosition, isExamBattle ? 28 : 24, 1, WHITE);
 
     DrawRectangleRec(topPanel, Fade(BLACK, 0.55f));
     DrawRectangleLinesEx(topPanel, 2, Fade(RAYWHITE, 0.7f));
