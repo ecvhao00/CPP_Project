@@ -21,7 +21,7 @@
 | `Game.h`, `Game.cpp` | 게임 창 생성, 메인 루프, Scene 전환, 공통 데이터와 리소스 소유를 담당한다. |
 | `Scene.h` | 모든 Scene이 따라야 하는 공통 인터페이스 `IScene`를 정의한다. |
 | `GameData.h` | 플레이어 정보, 학기 정보, 엔딩/시험/전투 상태 같은 게임 데이터를 담는다. |
-| `ResourceManager.h`, `ResourceManager.cpp` | 폰트 같은 리소스를 로드하고 해제한다. |
+| `ResourceManager.h`, `ResourceManager.cpp` | 폰트, 플레이어/적 스프라이트, NPC 초상화, 장면 배경 같은 리소스를 로드하고 해제한다. |
 
 ### 화면 단위 Scene
 
@@ -31,9 +31,9 @@
 | `IntroScene.h`, `IntroScene.cpp` | 조작 안내와 도입 대사를 출력한다. 끝나면 필드로 이동한다. |
 | `FieldScene.h`, `FieldScene.cpp` | 캠퍼스 필드. 공학관, 술자리, 집, 시간 넘기기 진입을 담당한다. |
 | `EngineeringScene.h`, `EngineeringScene.cpp` | 공학관 내부. 수업, 선배, 시험 선택지를 처리한다. |
-| `HomeScene.h`, `HomeScene.cpp` | 집 내부. 게임하기, 자기, 과제 수행하기를 처리한다. |
+| `HomeScene.h`, `HomeScene.cpp` | 집 내부. 게임하기, 자기, 과제 수행하기, 학교 가기를 처리한다. |
 | `BattleScene.h`, `BattleScene.cpp` | 과제 또는 시험 전투를 처리한다. |
-| `UiWidgets.h`, `UiWidgets.cpp` | 여러 Scene에서 공통으로 쓰는 상태 UI와 게이지 UI를 그린다. |
+| `UiWidgets.h`, `UiWidgets.cpp` | 여러 Scene에서 공통으로 쓰는 상태 UI, 게이지 UI, 플레이어 스프라이트, 화면 배경을 그린다. |
 
 ## 3. 실행 흐름
 
@@ -53,7 +53,7 @@ int main()
 `Game::Run()`의 흐름은 다음과 같다.
 
 1. `InitWindow()`로 raylib 창을 연다.
-2. `resources.Load()`로 폰트를 로드한다.
+2. `resources.Load()`로 폰트와 이미지 리소스를 로드한다.
 3. 첫 Scene을 `TitleScene`으로 설정한다.
 4. 게임이 종료될 때까지 반복한다.
 5. 매 프레임 현재 Scene의 `Update()`를 호출한다.
@@ -166,11 +166,13 @@ struct GameData
 
 플레이어의 전투와 이동 관련 정보이다.
 
-- `position`: 필드에서 플레이어 위치
+- `position`: 캠퍼스 필드에서 플레이어 위치
 - `hp`, `maxHp`: 멘탈
 - `attack`: 공격력
 - `level`: 레벨
 - `speed`: 이동 속도
+
+필드에서는 기본 플레이어 스프라이트 크기인 `36 x 36`을 사용한다. 공학관 내부와 집 내부는 배경 이미지의 스케일에 맞추기 위해 플레이어 스프라이트와 상호작용 판정 박스를 `144 x 144`로 확대해서 사용한다.
 
 ### SemesterData
 
@@ -178,14 +180,19 @@ struct GameData
 
 - `week`: 현재 주차
 - `isNight`: 낮/밤 상태
-- `assignmentScore`: 과제 점수
-- `attendanceScore`: 출석 점수
+- `assignmentMisses`: 과제 미제출 누적 횟수
+- `absences`: 결석 누적 횟수
 - `devPower`: 개발력
 - `network`: 인맥
+- `maxActionPoints`: 하루 최대 행동력
 - `actionPoints`: 행동력
 - `foughtToday`: 과제 전투 수행 여부
 - `tookExamToday`: 시험 수행 여부
 - `currentBattleIsExam`: 현재 전투가 시험인지 과제인지 구분하는 플래그
+- `attendedClassToday`: 오늘 수업을 들었는지 여부
+- `homeActionsUsedTonight`, `drinksTonight`: 밤 행동과 술자리 이용 횟수
+- `midtermExamDebuff`, `midtermPresentationDebuff`, `finalExamDebuff`, `finalPresentationDebuff`: 주차 이벤트로 발생한 디버프 상태
+- `gameEnded`, `passed`: 엔딩 처리 상태
 - `endingName`: 최종 엔딩 이름
 
 중요한 점은 `Game`이 `GameData data`를 소유하고, 각 Scene은 `game.Data()`를 통해 같은 데이터를 읽고 수정한다는 것이다.
@@ -224,9 +231,10 @@ struct GameData
 
 - 플레이어 이동 처리
 - 공학관, 술자리, 집, 시간 넘기기 영역 충돌 확인
+- 낮/밤 상태에 따라 `Smu_Day.png` 또는 `Smu_Night.png` 배경 출력
 - 낮에서 밤으로 전환
 - 밤에서 다음 주로 전환
-- 출석/과제 점수 감소 처리
+- 결석/과제 미제출 누적 처리
 - 8주차/15주차 시험 미응시 시 `F` 엔딩 처리
 - 15주차 종료 시 `A+`, `B+`, `C` 엔딩 계산
 
@@ -254,6 +262,8 @@ enum class TimeTransition
 - 선배 선택지 처리
 - 8주차/15주차에만 시험 선택지 표시
 - 시험 선택 시 `currentBattleIsExam = true`로 설정하고 `BattleScene`으로 전환
+- `GongHak.png` 배경 출력
+- 공학관 배경 스케일에 맞춰 플레이어 스프라이트와 상호작용 판정을 `144 x 144`로 사용
 
 수업을 들으면 개발력이 증가한다.
 
@@ -285,7 +295,10 @@ bool IsExamWeek(int week)
 - 게임하기: 멘탈 회복
 - 자기: 멘탈을 조금 회복하고 다음 주로 이동
 - 과제 수행하기: 일반 과제 전투 진입
+- 학교 가기: 캠퍼스 필드로 복귀
 - 다음 주로 넘어갈 때 시험 미응시 여부와 최종 엔딩 확인
+- `Home.png` 배경 출력
+- 집 배경 스케일에 맞춰 플레이어 스프라이트와 상호작용 판정을 `144 x 144`로 사용
 
 집에서 과제를 수행할 때는 일반 전투이므로 다음처럼 설정한다.
 
@@ -413,15 +426,28 @@ struct GameData
 
 ### 6. 리소스 관리
 
-`ResourceManager`는 폰트 로드와 해제를 담당한다.
+`ResourceManager`는 폰트와 이미지 리소스 로드/해제를 담당한다.
 
 ```cpp
 void Load();
 void Unload();
 Font& UiFont();
+Texture2D& CampusDayBackground();
+Texture2D& HomeBackground();
 ```
 
-폰트를 어디서 어떻게 불러오는지 Scene들이 직접 알 필요가 없다. Scene은 `game.Resources().UiFont()`로 폰트를 받아 사용하면 된다.
+폰트, 스프라이트, 초상화, 배경 이미지를 어디서 어떻게 불러오는지 Scene들이 직접 알 필요가 없다. Scene은 `game.Resources().UiFont()` 또는 `game.Resources().HomeBackground()`처럼 필요한 리소스 접근자만 사용하면 된다.
+
+현재 배경 리소스는 다음처럼 Scene과 연결된다.
+
+| 배경 파일 | 사용 Scene |
+| --- | --- |
+| `assets/background/Smu_Day.png` | 낮 캠퍼스 필드 |
+| `assets/background/Smu_Night.png` | 밤 캠퍼스 필드 |
+| `assets/background/GongHak.png` | 공학관 내부 |
+| `assets/background/Home.png` | 집 내부 |
+
+`NoTxt` 또는 `Notxt` 버전 배경은 비교용 자산으로 남겨두고, 현재 코드는 텍스트가 포함된 버전을 우선 사용한다.
 
 ### 7. 스마트 포인터를 이용한 소유권 관리
 
@@ -483,6 +509,8 @@ s.tookExamToday = true;
 | 개발력 >= 30 그리고 인맥 >= 20 | B+ |
 | 그 아래 | C |
 | 8주차/15주차 시험 미응시 | F |
+| 과제 미제출 누적 5회 | F |
+| 결석 누적 4회 | F |
 
 ## 10. 발표용 객체지향 설명 예시
 
