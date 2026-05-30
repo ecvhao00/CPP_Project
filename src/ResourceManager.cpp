@@ -117,10 +117,66 @@ void ResourceManager::Load()
     {
         SetTextureFilter(senpaiPortraitTexture, TEXTURE_FILTER_POINT);
     }
+
+    const char* const campusDayBackgroundPaths[] = {
+        "assets/background/Smu_Day.png",
+        "assets/Background/Smu_Day.png",
+        "Assets/background/Smu_Day.png",
+        "Assets/Background/Smu_Day.png"
+    };
+    campusDayBackgroundLoaded = LoadTextureFromFirstExistingPath(campusDayBackgroundPaths, 4, campusDayBackgroundTexture);
+
+    const char* const campusNightBackgroundPaths[] = {
+        "assets/background/Smu_Night.png",
+        "assets/Background/Smu_Night.png",
+        "Assets/background/Smu_Night.png",
+        "Assets/Background/Smu_Night.png"
+    };
+    campusNightBackgroundLoaded = LoadTextureFromFirstExistingPath(campusNightBackgroundPaths, 4, campusNightBackgroundTexture);
+
+    const char* const engineeringBackgroundPaths[] = {
+        "assets/background/GongHak.png",
+        "assets/Background/GongHak.png",
+        "Assets/background/GongHak.png",
+        "Assets/Background/GongHak.png"
+    };
+    engineeringBackgroundLoaded = LoadTextureFromFirstExistingPath(engineeringBackgroundPaths, 4, engineeringBackgroundTexture);
+
+    const char* const homeBackgroundPaths[] = {
+        "assets/background/Home.png",
+        "assets/Background/Home.png",
+        "Assets/background/Home.png",
+        "Assets/Background/Home.png"
+    };
+    homeBackgroundLoaded = LoadTextureFromFirstExistingPath(homeBackgroundPaths, 4, homeBackgroundTexture);
 }
 
 void ResourceManager::Unload()
 {
+    if (homeBackgroundLoaded)
+    {
+        UnloadTexture(homeBackgroundTexture);
+        homeBackgroundLoaded = false;
+    }
+
+    if (engineeringBackgroundLoaded)
+    {
+        UnloadTexture(engineeringBackgroundTexture);
+        engineeringBackgroundLoaded = false;
+    }
+
+    if (campusNightBackgroundLoaded)
+    {
+        UnloadTexture(campusNightBackgroundTexture);
+        campusNightBackgroundLoaded = false;
+    }
+
+    if (campusDayBackgroundLoaded)
+    {
+        UnloadTexture(campusDayBackgroundTexture);
+        campusDayBackgroundLoaded = false;
+    }
+
     if (senpaiPortraitLoaded)
     {
         UnloadTexture(senpaiPortraitTexture);
@@ -268,4 +324,44 @@ bool ResourceManager::HasSenpaiPortrait() const
 Texture2D& ResourceManager::SenpaiPortrait()
 {
     return senpaiPortraitTexture;
+}
+
+bool ResourceManager::HasCampusDayBackground() const
+{
+    return campusDayBackgroundLoaded;
+}
+
+Texture2D& ResourceManager::CampusDayBackground()
+{
+    return campusDayBackgroundTexture;
+}
+
+bool ResourceManager::HasCampusNightBackground() const
+{
+    return campusNightBackgroundLoaded;
+}
+
+Texture2D& ResourceManager::CampusNightBackground()
+{
+    return campusNightBackgroundTexture;
+}
+
+bool ResourceManager::HasEngineeringBackground() const
+{
+    return engineeringBackgroundLoaded;
+}
+
+Texture2D& ResourceManager::EngineeringBackground()
+{
+    return engineeringBackgroundTexture;
+}
+
+bool ResourceManager::HasHomeBackground() const
+{
+    return homeBackgroundLoaded;
+}
+
+Texture2D& ResourceManager::HomeBackground()
+{
+    return homeBackgroundTexture;
 }

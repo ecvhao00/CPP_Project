@@ -25,10 +25,10 @@ private:
     void AdvanceDialogue();
     void DrawDialogue(Game& game);
 
-    Rectangle gameZone = { 120, 160, 260, 150 };
-    Rectangle sleepZone = { 510, 160, 260, 150 };
-    Rectangle assignmentZone = { 120, 430, 260, 150 };
-    Rectangle schoolZone = { 510, 430, 260, 150 };
+    Rectangle gameZone = { 190, 55, 375, 320 };
+    Rectangle sleepZone = { 790, 120, 300, 390 };
+    Rectangle assignmentZone = { 320, 410, 385, 210 };
+    Rectangle schoolZone = { 875, 535, 260, 105 };
     Vector2 playerPosition = { 600.0f, 520.0f };
     bool playerMoving = false;
 

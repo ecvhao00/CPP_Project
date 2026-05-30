@@ -4,7 +4,7 @@
 
 struct PlayerData
 {
-    Vector2 position = { 210.0f, 250.0f };
+    Vector2 position = { 720.0f, 490.0f };
     int hp = 30;
     int maxHp = 30;
     int attack = 8;

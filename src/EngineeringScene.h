@@ -27,9 +27,9 @@ private:
     void DrawDialogue(Game& game);
     void DrawDialoguePortrait(Game& game, Rectangle area) const;
 
-    Rectangle classZone = { 140, 150, 300, 160 };
-    Rectangle seniorZone = { 520, 150, 300, 160 };
-    Rectangle examZone = { 900, 150, 260, 160 };
+    Rectangle classZone = { 150, 60, 340, 280 };
+    Rectangle seniorZone = { 585, 60, 470, 280 };
+    Rectangle examZone = { 900, 360, 260, 150 };
     Rectangle exitZone = { 1010, 570, 220, 100 };
     Vector2 playerPosition = { 600.0f, 520.0f };
     bool playerMoving = false;

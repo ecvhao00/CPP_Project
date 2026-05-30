@@ -24,6 +24,14 @@ public:
     Texture2D& ProfessorKPortrait();
     bool HasSenpaiPortrait() const;
     Texture2D& SenpaiPortrait();
+    bool HasCampusDayBackground() const;
+    Texture2D& CampusDayBackground();
+    bool HasCampusNightBackground() const;
+    Texture2D& CampusNightBackground();
+    bool HasEngineeringBackground() const;
+    Texture2D& EngineeringBackground();
+    bool HasHomeBackground() const;
+    Texture2D& HomeBackground();
 
 private:
     Font uiFont{};
@@ -44,4 +52,12 @@ private:
     bool professorKPortraitLoaded = false;
     Texture2D senpaiPortraitTexture{};
     bool senpaiPortraitLoaded = false;
+    Texture2D campusDayBackgroundTexture{};
+    bool campusDayBackgroundLoaded = false;
+    Texture2D campusNightBackgroundTexture{};
+    bool campusNightBackgroundLoaded = false;
+    Texture2D engineeringBackgroundTexture{};
+    bool engineeringBackgroundLoaded = false;
+    Texture2D homeBackgroundTexture{};
+    bool homeBackgroundLoaded = false;
 };

@@ -42,10 +42,10 @@ private:
     void DrawDialogue(Game& game);
     void DrawDialoguePortrait(Game& game, Rectangle area) const;
 
-    Rectangle engineeringZone = { 70, 75, 360, 155 };
-    Rectangle barZone = { 70, 300, 240, 130 };
-    Rectangle homeZone = { 70, 500, 240, 130 };
-    Rectangle nextZone = { 1030, 570, 210, 100 };
+    Rectangle engineeringZone = { 585, 55, 455, 465 };
+    Rectangle barZone = { 75, 80, 395, 280 };
+    Rectangle homeZone = { 110, 390, 230, 140 };
+    Rectangle nextZone = { 1090, 565, 175, 120 };
 
     bool showMessage = false;
     bool showCenterMessage = false;

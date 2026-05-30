@@ -14,6 +14,7 @@ namespace
 constexpr int GameMentalRecovery = 10;
 constexpr int SleepMentalRecovery = 4;
 constexpr float SleepTransitionDuration = 0.6f;
+constexpr float HomePlayerSize = 144.0f;
 
 void DrawCenteredTextInRect(Font& font, const char* text, Rectangle rect, float fontSize, Color color)
 {
@@ -109,7 +110,7 @@ std::string HomeScene::StartNextWeek(Game& game)
     s.homeActionsUsedTonight = 0;
     s.drinksTonight = 0;
     s.actionPoints = s.maxActionPoints;
-    d.player.position = { 210.0f, 250.0f };
+    d.player.position = { 720.0f, 490.0f };
     return ApplyWeekEvent(game);
 }
 
@@ -250,10 +251,10 @@ void HomeScene::Update(Game& game, float dt)
 
     playerPosition.x += input.x*d.player.speed*dt;
     playerPosition.y += input.y*d.player.speed*dt;
-    playerPosition.x = Clamp(playerPosition.x, 20, (float)Game::ScreenWidth-56);
-    playerPosition.y = Clamp(playerPosition.y, 20, (float)Game::ScreenHeight-56);
+    playerPosition.x = Clamp(playerPosition.x, 20, (float)Game::ScreenWidth - HomePlayerSize - 20.0f);
+    playerPosition.y = Clamp(playerPosition.y, 20, (float)Game::ScreenHeight - HomePlayerSize - 20.0f);
 
-    Rectangle playerRect{playerPosition.x, playerPosition.y, 36, 36};
+    Rectangle playerRect{playerPosition.x, playerPosition.y, HomePlayerSize, HomePlayerSize};
     bool nearGame = CheckCollisionRecs(playerRect, gameZone);
     bool nearSleep = CheckCollisionRecs(playerRect, sleepZone);
     bool nearAssignment = CheckCollisionRecs(playerRect, assignmentZone);
@@ -309,17 +310,33 @@ void HomeScene::Draw(Game& game)
 {
     const auto& d = game.Data();
     auto& f = game.Resources().UiFont();
+    ResourceManager& resources = game.Resources();
+    bool hasBackground = false;
 
-    DrawRectangle(0,0,Game::ScreenWidth,Game::ScreenHeight,Color{54,45,58,255});
-    DrawRectangleRec(gameZone, Color{60, 105, 180, 255});
-    DrawRectangleRec(sleepZone, Color{80, 80, 120, 255});
-    DrawRectangleRec(assignmentZone, Color{145, 70, 70, 255});
-    DrawRectangleRec(schoolZone, Color{48, 112, 92, 255});
-    DrawCenteredTextInRect(f, "게임하기", gameZone, 32, WHITE);
-    DrawCenteredTextInRect(f, "자기", sleepZone, 32, WHITE);
-    DrawCenteredTextInRect(f, "과제 수행하기", assignmentZone, 32, WHITE);
+    if (resources.HasHomeBackground())
+    {
+        UiWidgets::DrawScreenBackground(resources.HomeBackground());
+        hasBackground = true;
+    }
+
+    if (!hasBackground)
+    {
+        DrawRectangle(0,0,Game::ScreenWidth,Game::ScreenHeight,Color{54,45,58,255});
+        DrawRectangleRec(gameZone, Color{60, 105, 180, 255});
+        DrawRectangleRec(sleepZone, Color{80, 80, 120, 255});
+        DrawRectangleRec(assignmentZone, Color{145, 70, 70, 255});
+    }
+
+    DrawRectangleRec(schoolZone, hasBackground ? Fade(Color{48, 112, 92, 255}, 0.82f) : Color{48, 112, 92, 255});
+
+    if (!hasBackground)
+    {
+        DrawCenteredTextInRect(f, "게임하기", gameZone, 32, WHITE);
+        DrawCenteredTextInRect(f, "자기", sleepZone, 32, WHITE);
+        DrawCenteredTextInRect(f, "과제 수행하기", assignmentZone, 32, WHITE);
+    }
     DrawCenteredTextInRect(f, "학교 가기", schoolZone, 32, WHITE);
-    UiWidgets::DrawPlayer(game.Resources(), playerPosition, playerMoving);
+    UiWidgets::DrawPlayer(resources, playerPosition, playerMoving, HomePlayerSize);
 
     UiWidgets::DrawTopStatus(f, d, "집", "이동: WASD/방향키  E: 선택", "ESC: 밖으로");
     UiWidgets::DrawBottomGraphs(f, d);

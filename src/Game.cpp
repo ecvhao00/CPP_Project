@@ -132,7 +132,7 @@ void Game::JumpToDebugWeek(int week, bool startExamBattle)
     data.player.maxHp = week >= 15 ? 46 : 38;
     data.player.hp = data.player.maxHp;
     data.player.attack = week >= 15 ? 16 : 12;
-    data.player.position = { 210.0f, 250.0f };
+    data.player.position = { 720.0f, 490.0f };
     data.hasPotion = true;
 
     if (startExamBattle)

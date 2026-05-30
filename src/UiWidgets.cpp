@@ -1,4 +1,5 @@
 #include "UiWidgets.h"
+#include <algorithm>
 
 namespace
 {
@@ -22,18 +23,33 @@ void DrawBar(Font& font, const char* label, int value, int maxValue, Rectangle b
 
 namespace UiWidgets
 {
-void DrawPlayer(ResourceManager& resources, Vector2 position, bool moving)
+void DrawScreenBackground(Texture2D& texture)
+{
+    const float screenWidth = (float)GetScreenWidth();
+    const float screenHeight = (float)GetScreenHeight();
+    const float scale = std::max(screenWidth / (float)texture.width, screenHeight / (float)texture.height);
+    Rectangle source = { 0, 0, (float)texture.width, (float)texture.height };
+    Rectangle dest = {
+        (screenWidth - (float)texture.width * scale) * 0.5f,
+        (screenHeight - (float)texture.height * scale) * 0.5f,
+        (float)texture.width * scale,
+        (float)texture.height * scale
+    };
+    DrawTexturePro(texture, source, dest, { 0, 0 }, 0.0f, WHITE);
+}
+
+void DrawPlayer(ResourceManager& resources, Vector2 position, bool moving, float size)
 {
     if (!resources.HasPlayerWalkSprites())
     {
-        DrawRectangle((int)position.x, (int)position.y, 36, 36, SKYBLUE);
+        DrawRectangle((int)position.x, (int)position.y, (int)size, (int)size, SKYBLUE);
         return;
     }
 
     int frameIndex = moving ? ((int)(GetTime() * 8.0) % resources.PlayerWalkFrameCount()) : 0;
     Texture2D& texture = resources.PlayerWalkFrame(frameIndex);
     Rectangle source = { 0, 0, (float)texture.width, (float)texture.height };
-    Rectangle dest = { position.x, position.y, 36, 36 };
+    Rectangle dest = { position.x, position.y, size, size };
     DrawTexturePro(texture, source, dest, { 0, 0 }, 0.0f, WHITE);
 }
 

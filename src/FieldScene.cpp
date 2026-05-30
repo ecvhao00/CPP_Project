@@ -133,7 +133,7 @@ void FieldScene::NextWeek(Game& game)
     s.currentBattleIsExam = false;
     s.attendedClassToday = false;
     s.actionPoints = s.maxActionPoints;
-    d.player.position = { 210.0f, 250.0f };
+    d.player.position = { 720.0f, 490.0f };
     ApplyWeekEvent(game);
 }
 
@@ -359,14 +359,35 @@ void FieldScene::Update(Game& game, float dt)
 void FieldScene::Draw(Game& game)
 {
     const auto& d=game.Data(); const auto& s=d.semester; auto& f=game.Resources().UiFont();
-    DrawRectangle(0,0,Game::ScreenWidth,Game::ScreenHeight,Color{35,60,40,255});
-    DrawRectangleRec(engineeringZone, BLUE);
-    DrawRectangleRec(barZone, PURPLE); DrawRectangleRec(homeZone, BROWN); DrawRectangleRec(nextZone, DARKBLUE);
-    UiWidgets::DrawPlayer(game.Resources(), d.player.position, playerMoving);
-    DrawCenteredTextInRect(f, "공학관", engineeringZone, 32, WHITE);
-    DrawCenteredTextInRect(f, "술자리", barZone, 30, WHITE);
-    DrawCenteredTextInRect(f, "집", homeZone, 30, WHITE);
-    DrawCenteredTextInRect(f, s.isNight ? "다음 주" : "밤으로", nextZone, 28, WHITE);
+    ResourceManager& resources = game.Resources();
+    bool hasBackground = false;
+    if (s.isNight && resources.HasCampusNightBackground())
+    {
+        UiWidgets::DrawScreenBackground(resources.CampusNightBackground());
+        hasBackground = true;
+    }
+    else if (!s.isNight && resources.HasCampusDayBackground())
+    {
+        UiWidgets::DrawScreenBackground(resources.CampusDayBackground());
+        hasBackground = true;
+    }
+
+    if (!hasBackground)
+    {
+        DrawRectangle(0,0,Game::ScreenWidth,Game::ScreenHeight,Color{35,60,40,255});
+        DrawRectangleRec(engineeringZone, BLUE);
+        DrawRectangleRec(barZone, PURPLE); DrawRectangleRec(homeZone, BROWN); DrawRectangleRec(nextZone, DARKBLUE);
+    }
+
+    UiWidgets::DrawPlayer(resources, d.player.position, playerMoving);
+
+    if (!hasBackground)
+    {
+        DrawCenteredTextInRect(f, "공학관", engineeringZone, 32, WHITE);
+        DrawCenteredTextInRect(f, "술자리", barZone, 30, WHITE);
+        DrawCenteredTextInRect(f, "집", homeZone, 30, WHITE);
+        DrawCenteredTextInRect(f, s.isNight ? "다음 주" : "밤으로", nextZone, 28, WHITE);
+    }
 
     UiWidgets::DrawTopStatus(f, d, "캠퍼스", "이동: WASD/방향키  E: 상호작용", "공학관: 수업/선배  집: 밤에 이용");
     UiWidgets::DrawBottomGraphs(f, d);

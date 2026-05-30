@@ -9,6 +9,8 @@
 
 namespace
 {
+constexpr float EngineeringPlayerSize = 144.0f;
+
 const std::vector<std::string> ProfessorKClassDialogue = {
     "오늘은 코드가 왜 터지는지부터 보자.",
     "좋은 개발자는 에러 메시지를 무시하지 않는다.",
@@ -103,7 +105,7 @@ void EngineeringScene::Update(Game& game, float dt)
     if (IsKeyPressed(KEY_ESCAPE))
     {
         playerMoving = false;
-        d.player.position = { 210.0f, 250.0f };
+        d.player.position = { 720.0f, 490.0f };
         game.ChangeScene(std::make_unique<FieldScene>());
         return;
     }
@@ -128,10 +130,10 @@ void EngineeringScene::Update(Game& game, float dt)
 
     playerPosition.x += input.x*d.player.speed*dt;
     playerPosition.y += input.y*d.player.speed*dt;
-    playerPosition.x = Clamp(playerPosition.x, 20, (float)Game::ScreenWidth-56);
-    playerPosition.y = Clamp(playerPosition.y, 20, (float)Game::ScreenHeight-56);
+    playerPosition.x = Clamp(playerPosition.x, 20, (float)Game::ScreenWidth - EngineeringPlayerSize - 20.0f);
+    playerPosition.y = Clamp(playerPosition.y, 20, (float)Game::ScreenHeight - EngineeringPlayerSize - 20.0f);
 
-    Rectangle playerRect{playerPosition.x, playerPosition.y, 36, 36};
+    Rectangle playerRect{playerPosition.x, playerPosition.y, EngineeringPlayerSize, EngineeringPlayerSize};
     bool nearClass = CheckCollisionRecs(playerRect, classZone);
     bool nearSenior = CheckCollisionRecs(playerRect, seniorZone);
     bool nearExam = IsExamWeek(s.week) && CheckCollisionRecs(playerRect, examZone);
@@ -172,7 +174,7 @@ void EngineeringScene::Update(Game& game, float dt)
         }
         else if (nearExit)
         {
-            d.player.position = { 210.0f, 250.0f };
+            d.player.position = { 720.0f, 490.0f };
             game.ChangeScene(std::make_unique<FieldScene>());
             return;
         }
@@ -247,17 +249,33 @@ void EngineeringScene::Draw(Game& game)
 {
     const auto& d = game.Data();
     auto& f = game.Resources().UiFont();
+    ResourceManager& resources = game.Resources();
+    bool hasBackground = false;
 
-    DrawRectangle(0, 0, Game::ScreenWidth, Game::ScreenHeight, Color{42, 51, 64, 255});
-    DrawRectangleRec(classZone, BLUE);
-    DrawRectangleRec(seniorZone, ORANGE);
-    if (IsExamWeek(d.semester.week)) DrawRectangleRec(examZone, Color{185, 145, 55, 255});
-    DrawRectangleRec(exitZone, DARKBLUE);
-    DrawCenteredTextInRect(f, "수업", classZone, 32, WHITE);
-    DrawCenteredTextInRect(f, "선배", seniorZone, 32, WHITE);
+    if (resources.HasEngineeringBackground())
+    {
+        UiWidgets::DrawScreenBackground(resources.EngineeringBackground());
+        hasBackground = true;
+    }
+
+    if (!hasBackground)
+    {
+        DrawRectangle(0, 0, Game::ScreenWidth, Game::ScreenHeight, Color{42, 51, 64, 255});
+        DrawRectangleRec(classZone, BLUE);
+        DrawRectangleRec(seniorZone, ORANGE);
+    }
+
+    if (IsExamWeek(d.semester.week)) DrawRectangleRec(examZone, hasBackground ? Fade(Color{185, 145, 55, 255}, 0.82f) : Color{185, 145, 55, 255});
+    DrawRectangleRec(exitZone, hasBackground ? Fade(DARKBLUE, 0.82f) : DARKBLUE);
+
+    if (!hasBackground)
+    {
+        DrawCenteredTextInRect(f, "수업", classZone, 32, WHITE);
+        DrawCenteredTextInRect(f, "선배", seniorZone, 32, WHITE);
+    }
     if (IsExamWeek(d.semester.week)) DrawCenteredTextInRect(f, "시험", examZone, 32, WHITE);
     DrawCenteredTextInRect(f, "밖으로", exitZone, 30, WHITE);
-    UiWidgets::DrawPlayer(game.Resources(), playerPosition, playerMoving);
+    UiWidgets::DrawPlayer(resources, playerPosition, playerMoving, EngineeringPlayerSize);
 
     UiWidgets::DrawTopStatus(f, d, "공학관", "이동: WASD/방향키  E: 선택", "ESC: 밖으로");
     UiWidgets::DrawBottomGraphs(f, d);
